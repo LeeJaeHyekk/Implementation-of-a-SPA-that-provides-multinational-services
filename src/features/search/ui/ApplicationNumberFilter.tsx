@@ -4,23 +4,24 @@ import type { ChangeEvent } from 'react'
 
 import { useSearchStore } from '../model/store'
 
-export default function SearchBar() {
-  const keyword = useSearchStore((state) => state.keyword)
-  const setKeyword = useSearchStore((state) => state.setKeyword)
+export default function ApplicationNumberFilter() {
+  const applicationNumber = useSearchStore((state) => state.applicationNumber)
+  const setApplicationNumber = useSearchStore((state) => state.setApplicationNumber)
 
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
-    setKeyword(event.target.value)
+    setApplicationNumber(event.target.value)
   }
 
   return (
     <div className="w-full">
-      <label className="text-sm text-slate-300">상표명 검색</label>
+      <label className="text-sm text-slate-300">출원번호</label>
       <input
-        value={keyword}
+        value={applicationNumber}
         onChange={handleChange}
         className="mt-1 w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-400"
-        placeholder="상품명 또는 영문명을 입력"
+        placeholder="정확한 출원번호를 입력"
       />
     </div>
   )
 }
+

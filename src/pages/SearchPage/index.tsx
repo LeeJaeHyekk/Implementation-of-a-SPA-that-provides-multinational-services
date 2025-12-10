@@ -1,7 +1,14 @@
 'use client'
 
-import TrademarkSearchLayout from '@/processes/trademark-search/ui/TrademarkSearchLayout'
+import { useEffect } from 'react'
+import { useRouter } from 'next/router'
 
 export default function SearchPage() {
-  return <TrademarkSearchLayout />
+  const router = useRouter()
+
+  useEffect(() => {
+    void router.replace('/search')
+  }, [router])
+
+  return null
 }

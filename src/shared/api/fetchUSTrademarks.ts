@@ -2,11 +2,13 @@ import { normalizeTrademarks } from '@/entities/trademark/lib'
 import { USTrademarkRaw } from '@/entities/trademark/model'
 
 import { loadLocalJson } from './loadLocalJson'
+import usSample from '../../data/trademarks_us_sample.json' assert { type: 'json' }
+import usFull from '../../data/trademarks_us_trademarks.json' assert { type: 'json' }
 
 const US_DATA_LOADERS = [
-  () => import('@/data/trademarks_us_sample.json'),
-  () => import('@/data/trademarks_us_trademarks.json'),
-]
+  () => Promise.resolve({ default: usSample as USTrademarkRaw[] }),
+  () => Promise.resolve({ default: usFull as USTrademarkRaw[] }),
+] satisfies ReadonlyArray<() => Promise<{ default: USTrademarkRaw[] }>>
 
 export async function fetchUSTrademarks() {
   const data = await loadLocalJson<USTrademarkRaw[]>({

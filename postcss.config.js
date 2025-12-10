@@ -1,6 +1,12 @@
-module.exports = {
+import autoprefixer from 'autoprefixer'
+import tailwindcss from 'tailwindcss'
+
+/** @type {import('postcss').Config} */
+const config = {
   plugins: {
-    tailwindcss: {},
-    autoprefixer: {},
+    tailwindcss,
+    autoprefixer,
   },
 }
+
+export default config

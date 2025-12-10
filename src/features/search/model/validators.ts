@@ -8,6 +8,7 @@ const statusSchema = z
 
 const filterSchema = z.object({
   keyword: z.string().optional(),
+  applicationNumber: z.string().optional(),
   status: statusSchema,
   from: z.string().optional(),
   to: z.string().optional(),
@@ -30,6 +31,7 @@ export function parseFiltersFromQuery(
 ): TrademarkFilters {
   const result = filterSchema.safeParse({
     keyword: toStringValue(params.keyword),
+    applicationNumber: toStringValue(params.applicationNumber),
     status: toStringValue(params.status),
     from: toStringValue(params.from),
     to: toStringValue(params.to),
@@ -37,10 +39,11 @@ export function parseFiltersFromQuery(
 
   if (!result.success) return {}
 
-  const { keyword, status, from, to } = result.data
+  const { keyword, applicationNumber, status, from, to } = result.data
 
   return {
     keyword,
+    applicationNumber,
     status: toStatus(status),
     dateRange: from || to ? { from, to } : undefined,
   }

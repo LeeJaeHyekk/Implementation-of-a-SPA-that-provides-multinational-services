@@ -1,7 +1,7 @@
 'use client'
 
-import SearchPage from '@/pages/SearchPage'
+import TrademarkSearchLayout from '@/processes/trademark-search/ui/TrademarkSearchLayout'
 
 export default function SearchRoute() {
-  return <SearchPage />
+  return <TrademarkSearchLayout />
 }

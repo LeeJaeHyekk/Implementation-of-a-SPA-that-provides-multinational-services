@@ -12,7 +12,7 @@ interface UseTrademarksQueryParams {
 }
 
 export function useTrademarksQuery({ country }: UseTrademarksQueryParams) {
-  return useQuery<NormalizedTrademark[]>({
+  return useQuery<NormalizedTrademark[], Error>({
     queryKey: ['trademarks', country],
     queryFn: country === 'KR' ? fetchKRTrademarks : fetchUSTrademarks,
     staleTime: 1000 * 60 * 5,

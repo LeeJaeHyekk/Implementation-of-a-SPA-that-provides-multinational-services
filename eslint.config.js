@@ -1,14 +1,14 @@
-const js = require('@eslint/js')
-const tsParser = require('@typescript-eslint/parser')
-const tsPlugin = require('@typescript-eslint/eslint-plugin')
-const nextPlugin = require('@next/eslint-plugin-next')
-const reactPlugin = require('eslint-plugin-react')
-const reactHooksPlugin = require('eslint-plugin-react-hooks')
+import js from '@eslint/js'
+import tsParser from '@typescript-eslint/parser'
+import tsPlugin from '@typescript-eslint/eslint-plugin'
+import nextPlugin from '@next/eslint-plugin-next'
+import reactPlugin from 'eslint-plugin-react'
+import reactHooksPlugin from 'eslint-plugin-react-hooks'
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
-module.exports = [
+const config = [
   {
-    ignores: ['.next/**', 'node_modules/**'],
+    ignores: ['.next/**', 'node_modules/**', 'next-env.d.ts'],
   },
   js.configs.recommended,
   {
@@ -69,17 +69,11 @@ module.exports = [
   {
     files: ['**/*.js'],
     languageOptions: {
-      sourceType: 'commonjs',
+      sourceType: 'module',
       ecmaVersion: 'latest',
-      globals: {
-        require: 'readonly',
-        module: 'readonly',
-        __dirname: 'readonly',
-      },
-    },
-    rules: {
-      'no-undef': 'off',
     },
   },
 ]
+
+export default config
 

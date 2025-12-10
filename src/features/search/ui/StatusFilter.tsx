@@ -27,7 +27,7 @@ export default function StatusFilter() {
 
   return (
     <div className="w-full">
-      <label className="text-sm text-slate-300">상태</label>
+      <label className="text-sm text-slate-300">등록 상태</label>
       <select
         value={status ?? 'all'}
         onChange={handleChange}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import TrademarkCard from '@/entities/trademark/ui/TrademarkCard'
@@ -14,25 +14,76 @@ import { useTrademarksQuery } from '@/shared/api/useTrademarksQuery'
 import ResultSummary from '@/features/search/ui/ResultSummary'
 import SortSelector from '@/features/sorting/ui/SortSelector'
 
+const PAGE_SIZE = 10
+
 export default function SearchResultsPanel() {
   const country = useCountryStore((state) => state.country)
   const filters = useSearchFilters()
   const sort = useSortingStore((state) => state.sort)
   const favorites = useFavoritesStore((state) => state.favorites)
-  const { data, isLoading, error } = useTrademarksQuery({ country })
+  const { data, isLoading, isError, refetch, isFetching } = useTrademarksQuery({ country })
   const router = useRouter()
 
+  const trademarks = useMemo(() => data ?? [], [data])
+
+  const [appliedFilters, setAppliedFilters] = useState(filters)
+  const [autoApply, setAutoApply] = useState(true)
+  const [page, setPage] = useState(1)
+
+  const effectiveFilters = autoApply ? filters : appliedFilters
+
   const filtered = useMemo(() => {
-    if (!data) return []
-    const byFilter = combineFilters(data, filters)
+    if (!trademarks) return []
+    const byFilter = combineFilters(trademarks, effectiveFilters)
     return sortTrademarks(byFilter, sort)
-  }, [data, filters, sort])
+  }, [trademarks, effectiveFilters, sort])
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const paged = useMemo(
+    () => filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
+    [filtered, currentPage],
+  )
+
+  useEffect(() => {
+    globalThis.console?.log?.('[SearchDebug]', {
+      country,
+      autoApply,
+      filters,
+      appliedFilters,
+      effectiveFilters,
+      dataLength: trademarks.length,
+      isLoading,
+      isFetching,
+    })
+  }, [appliedFilters, autoApply, country, trademarks, effectiveFilters, filters, isFetching, isLoading])
 
   function handleSelect(id: string) {
     router.push(`/trademark/${id}`)
   }
 
-  if (error) {
+  function handleApply() {
+    setAppliedFilters(filters)
+    setPage(1)
+    void refetch()
+  }
+
+  function renderActiveFilters() {
+    const chips: string[] = []
+    if (effectiveFilters.keyword) chips.push(`상표명: ${effectiveFilters.keyword}`)
+    if (effectiveFilters.applicationNumber) chips.push(`출원번호: ${effectiveFilters.applicationNumber}`)
+    if (effectiveFilters.status && effectiveFilters.status !== 'all') chips.push(`상태: ${effectiveFilters.status}`)
+    if (effectiveFilters.dateRange?.from || effectiveFilters.dateRange?.to) {
+      chips.push(
+        `출원일: ${effectiveFilters.dateRange?.from ?? '전체'} ~ ${effectiveFilters.dateRange?.to ?? '전체'}`,
+      )
+    }
+    return chips
+  }
+
+  const activeChips = renderActiveFilters()
+
+  if (isError) {
     return (
       <div className="rounded-md border border-red-500/50 bg-red-950/50 px-4 py-3 text-sm text-red-100">
         데이터를 불러오는 중 오류가 발생했습니다.
@@ -40,29 +91,101 @@ export default function SearchResultsPanel() {
     )
   }
 
-  const totalCount = data?.length ?? 0
+  const totalCount = trademarks.length
   const filteredCount = filtered.length
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-5">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <ResultSummary country={country} total={totalCount} filtered={filteredCount} isLoading={isLoading} />
-        <div className="md:w-60">
-          <SortSelector />
+        <div className="flex flex-wrap items-center gap-3 md:w-auto">
+          <button
+            type="button"
+            onClick={handleApply}
+            className="rounded-full border border-indigo-400 bg-indigo-500/10 px-4 py-2 text-sm font-medium text-indigo-100 shadow-sm transition hover:bg-indigo-500 hover:text-slate-900 disabled:cursor-not-allowed disabled:border-slate-700 disabled:text-slate-500"
+            disabled={isLoading || isFetching || autoApply}
+          >
+            {isFetching ? '조회 중...' : '조회'}
+          </button>
+          <label className="flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/60 px-3 py-1 text-xs text-slate-200 shadow-sm">
+            <input
+              type="checkbox"
+              checked={autoApply}
+              onChange={(event) => {
+                setAutoApply(event.target.checked)
+                setPage(1)
+              }}
+              className="h-4 w-4 accent-indigo-500"
+            />
+            자동 적용
+          </label>
+          <div className="md:w-60">
+            <SortSelector />
+          </div>
         </div>
       </div>
 
+      <div className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900/80 via-slate-900/60 to-slate-800/60 p-4 shadow-xl">
+        {activeChips.length > 0 ? (
+          <div className="flex flex-wrap gap-2 text-xs text-indigo-100">
+            {activeChips.map((chip) => (
+              <span
+                key={chip}
+                className="rounded-full border border-indigo-500/40 bg-indigo-500/10 px-3 py-1 shadow-sm backdrop-blur"
+              >
+                {chip}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-slate-400">
+            필터가 적용되지 않았습니다. 검색어, 출원번호, 상태, 날짜를 설정하세요.
+          </p>
+        )}
+      </div>
+
       {isLoading ? (
-        <p className="text-sm text-slate-300">불러오는 중...</p>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-6 text-sm text-slate-300 shadow-inner">
+          불러오는 중...
+        </div>
       ) : filtered.length === 0 ? (
-        <p className="rounded-md border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-slate-300">
+        <p className="rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-6 text-sm text-slate-300 shadow-inner">
           조건에 맞는 상표가 없습니다.
         </p>
       ) : (
-        <div className="grid gap-4">
-          {filtered.map((item) => (
-            <TrademarkCard key={item.id} trademark={item} onSelect={handleSelect} />
-          ))}
+        <div className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            {paged.map((item) => (
+              <TrademarkCard key={item.id} trademark={item} onSelect={handleSelect} />
+            ))}
+          </div>
+
+          <div className="flex items-center justify-between rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-sm text-slate-200 shadow-inner">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="rounded-full border border-slate-700 px-3 py-1 transition hover:border-indigo-400 disabled:cursor-not-allowed disabled:border-slate-800 disabled:text-slate-500"
+              >
+                이전
+              </button>
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="rounded-full border border-slate-700 px-3 py-1 transition hover:border-indigo-400 disabled:cursor-not-allowed disabled:border-slate-800 disabled:text-slate-500"
+              >
+                다음
+              </button>
+              <span className="rounded-full border border-slate-700 bg-slate-800/60 px-3 py-1 text-xs text-slate-300">
+                {currentPage} / {totalPages}페이지
+              </span>
+            </div>
+            <span className="text-xs text-slate-400">
+              페이지당 {PAGE_SIZE}개 · 총 {filteredCount}건
+            </span>
+          </div>
         </div>
       )}
 

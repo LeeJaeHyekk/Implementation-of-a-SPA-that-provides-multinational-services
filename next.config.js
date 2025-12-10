@@ -1,10 +1,13 @@
+import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   typedRoutes: true,
   turbopack: {
-    root: __dirname,
+    root: dirname(fileURLToPath(import.meta.url)),
   },
 }
 
-module.exports = nextConfig
+export default nextConfig

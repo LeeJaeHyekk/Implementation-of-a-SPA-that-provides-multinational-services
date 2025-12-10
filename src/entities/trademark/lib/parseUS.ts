@@ -8,9 +8,9 @@ function normalizeStatus(status?: string): RegisterStatus {
   return US_STATUS_MAP[upper] ?? DEFAULT_REGISTER_STATUS
 }
 
-function normalizeList(value?: string[] | null): string[] {
+function normalizeList(value?: Array<string | null> | null): string[] {
   if (!value) return []
-  return value.filter(Boolean)
+  return value.filter((item): item is string => Boolean(item))
 }
 
 function normalizeString(value?: string | null): string | null {

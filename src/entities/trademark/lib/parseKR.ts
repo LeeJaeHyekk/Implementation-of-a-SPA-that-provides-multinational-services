@@ -8,9 +8,9 @@ function normalizeStatus(status?: string): RegisterStatus {
   return KR_STATUS_MAP[trimmed] ?? DEFAULT_REGISTER_STATUS
 }
 
-function normalizeList(value?: string[] | null): string[] {
+function normalizeList(value?: Array<string | null> | null): string[] {
   if (!value) return []
-  return value.filter(Boolean)
+  return value.filter((item): item is string => Boolean(item))
 }
 
 function normalizeString(value?: string | null): string | null {
@@ -19,18 +19,24 @@ function normalizeString(value?: string | null): string | null {
   return trimmed.length ? trimmed : null
 }
 
-function normalizeRequiredString(value?: string | null): string {
-  if (!value) return '미상'
-  const trimmed = value.trim()
-  return trimmed.length ? trimmed : '미상'
+function resolveNames(productName?: string | null, productNameEng?: string | null) {
+  const kr = normalizeString(productName)
+  const en = normalizeString(productNameEng)
+
+  return {
+    productName: kr ?? en ?? '미상',
+    productNameEng: en ?? undefined,
+  }
 }
 
 export function parseKR(raw: KRTrademarkRaw): NormalizedTrademark {
+  const names = resolveNames(raw.productName, raw.productNameEng)
+
   return {
     id: `KR-${raw.applicationNumber}`,
     country: 'KR',
-    productName: normalizeRequiredString(raw.productName),
-    productNameEng: raw.productNameEng,
+    productName: names.productName,
+    productNameEng: names.productNameEng,
     applicationNumber: raw.applicationNumber,
     applicationDate: raw.applicationDate ?? null,
     registerStatus: normalizeStatus(raw.registerStatus),

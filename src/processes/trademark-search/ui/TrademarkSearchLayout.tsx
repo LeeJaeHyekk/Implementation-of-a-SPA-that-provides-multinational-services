@@ -1,6 +1,7 @@
 'use client'
 
 import CountrySwitcher from '@/features/country-switcher/ui/CountrySwitcher'
+import ApplicationNumberFilter from '@/features/search/ui/ApplicationNumberFilter'
 import DateRangeFilter from '@/features/search/ui/DateRangeFilter'
 import SearchBar from '@/features/search/ui/SearchBar'
 import StatusFilter from '@/features/search/ui/StatusFilter'
@@ -17,9 +18,10 @@ export default function TrademarkSearchLayout() {
         </p>
       </header>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
         <CountrySwitcher />
         <SearchBar />
+        <ApplicationNumberFilter />
         <StatusFilter />
         <DateRangeFilter />
       </div>

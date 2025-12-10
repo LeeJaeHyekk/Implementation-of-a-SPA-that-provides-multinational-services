@@ -13,7 +13,7 @@ export interface NormalizedTrademark {
   id: string
   country: TrademarkCountry
   productName: string
-  productNameEng?: string
+  productNameEng?: string | null
   applicationNumber: string
   applicationDate?: string | null
   registerStatus: RegisterStatus
@@ -35,6 +35,7 @@ export interface NormalizedTrademark {
 
 export interface TrademarkFilters {
   keyword?: string
+  applicationNumber?: string
   status?: RegisterStatus | 'all'
   dateRange?: {
     from?: string
