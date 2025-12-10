@@ -1,0 +1,21 @@
+interface ResultSummaryProps {
+  total: number
+  filtered: number
+  country: string
+  isLoading?: boolean
+}
+
+export default function ResultSummary({
+  total,
+  filtered,
+  country,
+  isLoading = false,
+}: ResultSummaryProps) {
+  return (
+    <div className="rounded-md border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-slate-200">
+      <p className="font-medium">
+        {country} 상표 {isLoading ? '불러오는 중...' : `${filtered} / ${total}건`}
+      </p>
+    </div>
+  )
+}
