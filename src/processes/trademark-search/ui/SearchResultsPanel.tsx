@@ -11,6 +11,7 @@ import { useFavoritesStore } from '@/features/favorites/model/store'
 import { useSortingStore } from '@/features/sorting/model/store'
 import { sortTrademarks } from '@/features/sorting/lib/sortTrademarks'
 import { useTrademarksQuery } from '@/shared/api/useTrademarksQuery'
+import { NormalizedTrademark } from '@/entities/trademark/model'
 import ResultSummary from '@/features/search/ui/ResultSummary'
 import SortSelector from '@/features/sorting/ui/SortSelector'
 
@@ -29,6 +30,7 @@ export default function SearchResultsPanel() {
   const [appliedFilters, setAppliedFilters] = useState(filters)
   const [autoApply, setAutoApply] = useState(true)
   const [page, setPage] = useState(1)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
 
   const effectiveFilters = autoApply ? filters : appliedFilters
 
@@ -43,6 +45,11 @@ export default function SearchResultsPanel() {
   const paged = useMemo(
     () => filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
     [filtered, currentPage],
+  )
+
+  const selectedTrademark = useMemo(
+    () => filtered.find((item) => item.id === selectedId) ?? null,
+    [filtered, selectedId],
   )
 
   useEffect(() => {
@@ -192,6 +199,123 @@ export default function SearchResultsPanel() {
       {favorites.length > 0 ? (
         <p className="text-xs text-slate-500">즐겨찾기: {favorites.length}건 저장됨</p>
       ) : null}
+
+      {selectedTrademark ? (
+        <DetailModal
+          trademark={selectedTrademark}
+          onClose={() => setSelectedId(null)}
+          onBack={() => setSelectedId(null)}
+        />
+      ) : null}
     </section>
+  )
+}
+
+function formatDate(value?: string | null): string {
+  if (!value) return '-'
+  const compact = value.replaceAll('-', '')
+  if (/^\d{8}$/.test(compact)) return compact
+  return value
+}
+
+interface DetailModalProps {
+  trademark: NormalizedTrademark
+  onClose: () => void
+  onBack: () => void
+}
+
+function DetailModal({ trademark, onClose, onBack }: DetailModalProps) {
+  const isKR = trademark.country === 'KR'
+  const fields: Array<[string, string | string[] | null | undefined]> = isKR
+    ? [
+        ['출원번호', trademark.applicationNumber],
+        ['출원일', trademark.applicationDate],
+        ['등록 상태', trademark.registerStatus],
+        ['공고번호', trademark.publicationNumber],
+        ['공고일', trademark.publicationDate],
+        ['등록번호', trademark.registrationNumber],
+        ['등록일', trademark.registrationDate],
+        ['등록 공고 번호', trademark.registrationPubNumber],
+        ['등록 공고일', trademark.registrationPubDate],
+        ['국제출원번호', trademark.internationalRegNumbers],
+        ['국제출원일', trademark.internationalRegDate],
+        ['우선권 번호', trademark.priorityClaimNumList],
+        ['우선권 일자', trademark.priorityClaimDateList],
+        ['상품 주 분류 코드', trademark.productMainCodes],
+        ['상품 유사군 코드', trademark.productSubCodes],
+        ['비엔나 코드', trademark.viennaCodeList],
+      ]
+    : [
+        ['출원번호', trademark.applicationNumber],
+        ['출원일', trademark.applicationDate],
+        ['등록 상태', trademark.registerStatus],
+        ['공고일', trademark.publicationDate],
+        ['등록번호', trademark.registrationNumber],
+        ['등록일', trademark.registrationDate],
+        ['국제출원번호', trademark.internationalRegNumbers],
+        ['국제출원일', trademark.internationalRegDate],
+        ['우선권 번호', trademark.priorityClaimNumList],
+        ['우선권 일자', trademark.priorityClaimDateList],
+        ['Nice 분류 코드', trademark.productMainCodes],
+        ['US 코드', trademark.usClassCodes],
+        ['비엔나 코드', trademark.viennaCodeList],
+      ]
+
+  const renderField = (label: string, value: string | string[] | null | undefined) => {
+    const display = Array.isArray(value)
+      ? value.length > 0
+        ? value.map(formatDate).join(', ')
+        : '-'
+      : formatDate(value as string | null)
+
+    return (
+      <div
+        key={label}
+        className="flex flex-col gap-1 rounded-xl border border-slate-800/70 bg-slate-900/70 px-3 py-2 shadow-sm"
+      >
+        <p className="text-xs text-slate-400">{label}</p>
+        <p className="text-sm font-medium text-slate-50 break-words">{display === '-' ? '-' : display}</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur">
+      <div className="relative w-full max-w-4xl rounded-3xl border border-slate-800/70 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-900/80 p-6 shadow-2xl shadow-indigo-900/30">
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-1">
+            <p className="text-xs uppercase tracking-[0.2em] text-indigo-200/80">{trademark.country}</p>
+            <h2 className="text-2xl font-semibold text-slate-50">{trademark.productName}</h2>
+            {trademark.productNameEng ? (
+              <p className="text-sm text-slate-300">{trademark.productNameEng}</p>
+            ) : null}
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="rounded-full border border-indigo-500/50 bg-indigo-500/10 px-3 py-1 text-xs font-semibold text-indigo-100">
+              {trademark.registerStatus}
+            </span>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs text-slate-200 transition hover:border-indigo-400 hover:text-indigo-100"
+            >
+              닫기
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-3 md:grid-cols-3">{fields.map(([label, value]) => renderField(label, value))}</div>
+
+        <div className="mt-6 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onBack}
+            className="rounded-full border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-slate-200 transition hover:border-indigo-400 hover:text-indigo-100"
+          >
+            닫기
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }

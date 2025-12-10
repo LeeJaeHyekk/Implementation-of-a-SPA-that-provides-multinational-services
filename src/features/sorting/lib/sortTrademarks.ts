@@ -3,7 +3,13 @@ import { NormalizedTrademark } from '@/entities/trademark/model'
 import { SortOption } from '../model/store'
 
 function toTimestamp(value?: string | null) {
-  const timestamp = value ? Date.parse(value) : NaN
+  if (!value) return null
+  const compact = value.trim()
+  const normalized =
+    /^\d{8}$/.test(compact) && !compact.includes('-')
+      ? `${compact.slice(0, 4)}-${compact.slice(4, 6)}-${compact.slice(6, 8)}`
+      : compact
+  const timestamp = Date.parse(normalized)
   return Number.isNaN(timestamp) ? null : timestamp
 }
 

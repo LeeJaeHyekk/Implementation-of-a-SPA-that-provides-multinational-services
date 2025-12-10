@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, use } from 'react'
 import { useRouter } from 'next/navigation'
 
 import FavoriteButton from '@/features/favorites/ui/FavoriteButton'
@@ -9,9 +9,9 @@ import TrademarkDetail from '@/entities/trademark/ui/TrademarkDetail'
 import { useTrademarksQuery } from '@/shared/api/useTrademarksQuery'
 
 interface TrademarkDetailRouteProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 function resolveCountry(id: string): TrademarkCountry {
@@ -21,13 +21,14 @@ function resolveCountry(id: string): TrademarkCountry {
 
 export default function TrademarkDetailRoute({ params }: TrademarkDetailRouteProps) {
   const router = useRouter()
-  const country = resolveCountry(params.id)
+  const resolvedParams = use(params)
+  const country = resolveCountry(resolvedParams.id)
   const { data, isLoading, isError } = useTrademarksQuery({ country })
   const trademarks = useMemo(() => data ?? [], [data])
 
   const trademark = useMemo(
-    () => trademarks.find((item) => item.id === params.id),
-    [trademarks, params.id],
+    () => trademarks.find((item) => item.id === resolvedParams.id),
+    [trademarks, resolvedParams.id],
   )
 
   if (isError) {
