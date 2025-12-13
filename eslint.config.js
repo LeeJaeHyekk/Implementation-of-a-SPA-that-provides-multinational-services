@@ -51,6 +51,8 @@ const config = [
         clearTimeout: 'readonly',
         setInterval: 'readonly',
         clearInterval: 'readonly',
+        requestAnimationFrame: 'readonly',
+        cancelAnimationFrame: 'readonly',
         performance: 'readonly',
         process: 'readonly',
         NodeJS: 'readonly',

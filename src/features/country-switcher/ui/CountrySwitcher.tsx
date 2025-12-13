@@ -15,11 +15,11 @@ export default function CountrySwitcher() {
 
   return (
     <div className="w-full">
-      <label className="text-sm text-slate-300">국가</label>
+      <label className="text-sm font-medium text-slate-200 drop-shadow-sm">국가</label>
       <select
         value={country}
         onChange={(event) => setCountry(event.target.value as TrademarkCountry)}
-        className="mt-1 w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-400"
+        className="glass-select h-[42px] mt-1 w-full rounded-lg px-3 text-sm text-slate-100"
       >
         {COUNTRY_OPTIONS.map((option) => (
           <option key={option.value} value={option.value}>

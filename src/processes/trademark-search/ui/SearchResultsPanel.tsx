@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import TrademarkCard from '@/entities/trademark/ui/TrademarkCard'
 import { useCountryStore } from '@/features/country-switcher/model/store'
 import { useSearchFilters } from '@/features/search/model/selectors'
+import { useSearchStore } from '@/features/search/model/store'
 import { combineFilters, combineFiltersAsync } from '@/features/search/lib'
 import { useFavoritesStore } from '@/features/favorites/model/store'
 import { useSortingStore } from '@/features/sorting/model/store'
@@ -23,18 +24,22 @@ export default function SearchResultsPanel() {
   const filters = useSearchFilters()
   const sort = useSortingStore((state) => state.sort)
   const favorites = useFavoritesStore((state) => state.favorites)
-  const { data, isLoading, isError, refetch, isFetching } = useTrademarksQuery({ country })
+  const { data, isLoading, isError, isFetching } = useTrademarksQuery({ country })
   const router = useRouter()
+  
+  // 필터 제거 함수들
+  const setKeyword = useSearchStore((state) => state.setKeyword)
+  const setApplicationNumber = useSearchStore((state) => state.setApplicationNumber)
+  const setStatus = useSearchStore((state) => state.setStatus)
+  const setDateRange = useSearchStore((state) => state.setDateRange)
 
   // 데이터는 이미 fetch 단계에서 전처리됨
   const trademarks = useMemo(() => data ?? [], [data])
 
-  const [appliedFilters, setAppliedFilters] = useState(filters)
-  const [autoApply, setAutoApply] = useState(true)
   const [page, setPage] = useState(1)
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
-  const effectiveFilters = autoApply ? filters : appliedFilters
+  const effectiveFilters = filters
 
   // 대량 데이터 처리 최적화
   const [filtered, setFiltered] = useState<NormalizedTrademark[]>([])
@@ -95,43 +100,66 @@ export default function SearchResultsPanel() {
   useEffect(() => {
     globalThis.console?.log?.('[SearchDebug]', {
       country,
-      autoApply,
       filters,
-      appliedFilters,
       effectiveFilters,
       dataLength: trademarks.length,
       isLoading,
       isFetching,
     })
-  }, [appliedFilters, autoApply, country, trademarks, effectiveFilters, filters, isFetching, isLoading])
+  }, [country, trademarks, effectiveFilters, filters, isFetching, isLoading])
 
   function handleSelect(id: string) {
     router.push(`/trademark/${id}`)
   }
 
-  function handleApply() {
-    setAppliedFilters(filters)
-    setPage(1)
-    void refetch()
-  }
-
   // 필터 칩 메모이제이션 (성능 최적화)
   const activeChips = useMemo(() => {
-    const chips: string[] = []
-    if (effectiveFilters.keyword) chips.push(`상표명: ${effectiveFilters.keyword}`)
-    if (effectiveFilters.applicationNumber) chips.push(`출원번호: ${effectiveFilters.applicationNumber}`)
-    if (effectiveFilters.status && effectiveFilters.status !== 'all') chips.push(`상태: ${effectiveFilters.status}`)
-    if (effectiveFilters.dateRange?.from || effectiveFilters.dateRange?.to) {
-      chips.push(
-        `출원일: ${effectiveFilters.dateRange?.from ?? '전체'} ~ ${effectiveFilters.dateRange?.to ?? '전체'}`,
-      )
+    interface FilterChip {
+      id: string
+      label: string
+      onRemove: () => void
     }
+    
+    const chips: FilterChip[] = []
+    
+    if (effectiveFilters.keyword) {
+      chips.push({
+        id: 'keyword',
+        label: `상표명: ${effectiveFilters.keyword}`,
+        onRemove: () => setKeyword(''),
+      })
+    }
+    
+    if (effectiveFilters.applicationNumber) {
+      chips.push({
+        id: 'applicationNumber',
+        label: `출원번호: ${effectiveFilters.applicationNumber}`,
+        onRemove: () => setApplicationNumber(''),
+      })
+    }
+    
+    if (effectiveFilters.status && effectiveFilters.status !== 'all') {
+      chips.push({
+        id: 'status',
+        label: `상태: ${effectiveFilters.status}`,
+        onRemove: () => setStatus('all'),
+      })
+    }
+    
+    if (effectiveFilters.dateRange?.from || effectiveFilters.dateRange?.to) {
+      chips.push({
+        id: 'dateRange',
+        label: `출원일: ${effectiveFilters.dateRange?.from ?? '전체'} ~ ${effectiveFilters.dateRange?.to ?? '전체'}`,
+        onRemove: () => setDateRange({ from: undefined, to: undefined }),
+      })
+    }
+    
     return chips
-  }, [effectiveFilters])
+  }, [effectiveFilters, setKeyword, setApplicationNumber, setStatus, setDateRange])
 
   if (isError) {
     return (
-      <div className="rounded-md border border-red-500/50 bg-red-950/50 px-4 py-3 text-sm text-red-100">
+      <div className="glass-card rounded-lg border-red-500/40 bg-red-950/30 px-4 py-3 text-sm font-medium text-red-200 backdrop-blur-md">
         데이터를 불러오는 중 오류가 발생했습니다.
       </div>
     )
@@ -145,42 +173,42 @@ export default function SearchResultsPanel() {
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <ResultSummary country={country} total={totalCount} filtered={filteredCount} isLoading={isLoading} />
         <div className="flex flex-wrap items-center gap-3 md:w-auto">
-          <button
-            type="button"
-            onClick={handleApply}
-            className="flex items-center gap-2 rounded-full border border-indigo-400 bg-indigo-500/10 px-4 py-2 text-sm font-medium text-indigo-100 shadow-sm transition hover:bg-indigo-500 hover:text-slate-900 disabled:cursor-not-allowed disabled:border-slate-700 disabled:text-slate-500"
-            disabled={isLoading || isFetching || autoApply}
-          >
-            {isFetching && <LoadingSpinner size="sm" color="indigo" />}
-            {isFetching ? '조회 중...' : '조회'}
-          </button>
-          <label className="flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/60 px-3 py-1 text-xs text-slate-200 shadow-sm">
-            <input
-              type="checkbox"
-              checked={autoApply}
-              onChange={(event) => {
-                setAutoApply(event.target.checked)
-                setPage(1)
-              }}
-              className="h-4 w-4 accent-indigo-500"
-            />
-            자동 적용
-          </label>
           <div className="md:w-60">
             <SortSelector />
           </div>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900/80 via-slate-900/60 to-slate-800/60 p-4 shadow-xl">
+      <div className="glass-card rounded-2xl p-4">
         {activeChips.length > 0 ? (
           <div className="flex flex-wrap gap-2 text-xs text-indigo-100">
             {activeChips.map((chip) => (
               <span
-                key={chip}
-                className="rounded-full border border-indigo-500/40 bg-indigo-500/10 px-3 py-1 shadow-sm backdrop-blur"
+                key={chip.id}
+                className="glass-badge flex items-center gap-1.5 rounded-lg px-3 py-1"
               >
-                {chip}
+                <span>{chip.label}</span>
+                <button
+                  type="button"
+                  onClick={chip.onRemove}
+                  className="ml-0.5 flex items-center justify-center rounded transition hover:text-red-300 focus:outline-none focus:ring-1 focus:ring-red-300"
+                  aria-label={`${chip.label} 필터 제거`}
+                >
+                  <svg
+                    className="h-3.5 w-3.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
               </span>
             ))}
           </div>
@@ -192,11 +220,11 @@ export default function SearchResultsPanel() {
       </div>
 
       {isLoading ? (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-12 shadow-inner">
+        <div className="glass-card rounded-2xl px-4 py-12">
           <LoadingSpinner size="lg" color="indigo" text="데이터를 불러오는 중..." />
         </div>
       ) : isFetching || isFiltering ? (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-6 shadow-inner">
+        <div className="glass-card rounded-2xl px-4 py-6">
           <div className="flex items-center justify-center gap-3">
             <LoadingSpinner size="md" color="indigo" />
             <span className="text-sm text-slate-300">
@@ -205,7 +233,7 @@ export default function SearchResultsPanel() {
           </div>
         </div>
       ) : filtered.length === 0 ? (
-        <p className="rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-6 text-sm text-slate-300 shadow-inner">
+        <p className="glass-card rounded-2xl px-4 py-6 text-sm font-medium text-slate-300">
           조건에 맞는 상표가 없습니다.
         </p>
       ) : (
@@ -216,13 +244,13 @@ export default function SearchResultsPanel() {
             ))}
           </div>
 
-          <div className="flex items-center justify-between rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-sm text-slate-200 shadow-inner">
+          <div className="glass-card flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium text-slate-200">
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="rounded-full border border-slate-700 px-3 py-1 transition hover:border-indigo-400 disabled:cursor-not-allowed disabled:border-slate-800 disabled:text-slate-500"
+                className="glass-button rounded-lg px-3 py-1 text-sm font-medium text-slate-200 transition disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:transform-none"
               >
                 이전
               </button>
@@ -230,11 +258,11 @@ export default function SearchResultsPanel() {
                 type="button"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="rounded-full border border-slate-700 px-3 py-1 transition hover:border-indigo-400 disabled:cursor-not-allowed disabled:border-slate-800 disabled:text-slate-500"
+                className="glass-button rounded-lg px-3 py-1 text-sm font-medium text-slate-200 transition disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:transform-none"
               >
                 다음
               </button>
-              <span className="rounded-full border border-slate-700 bg-slate-800/60 px-3 py-1 text-xs text-slate-300">
+              <span className="glass-badge rounded-lg px-3 py-1 text-xs font-medium text-slate-300">
                 {currentPage} / {totalPages}페이지
               </span>
             </div>
@@ -320,7 +348,7 @@ function DetailModal({ trademark, onClose, onBack }: DetailModalProps) {
     return (
       <div
         key={label}
-        className="flex flex-col gap-1 rounded-xl border border-slate-800/70 bg-slate-900/70 px-3 py-2 shadow-sm"
+        className="glass-card flex flex-col gap-1 rounded-xl px-3 py-2"
       >
         <p className="text-xs text-slate-400">{label}</p>
         <p className="text-sm font-medium text-slate-50 break-words">{display === '-' ? '-' : display}</p>
@@ -340,13 +368,13 @@ function DetailModal({ trademark, onClose, onBack }: DetailModalProps) {
             ) : null}
           </div>
           <div className="flex items-center gap-2">
-            <span className="rounded-full border border-indigo-500/50 bg-indigo-500/10 px-3 py-1 text-xs font-semibold text-indigo-100">
+            <span className="glass-badge rounded-lg px-3 py-1 text-xs font-semibold text-indigo-200">
               {trademark.registerStatus}
             </span>
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs text-slate-200 transition hover:border-indigo-400 hover:text-indigo-100"
+              className="glass-button rounded-lg px-3 py-1 text-xs font-medium text-slate-200 transition hover:text-indigo-200"
             >
               닫기
             </button>
@@ -359,7 +387,7 @@ function DetailModal({ trademark, onClose, onBack }: DetailModalProps) {
           <button
             type="button"
             onClick={onBack}
-            className="rounded-full border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-slate-200 transition hover:border-indigo-400 hover:text-indigo-100"
+            className="glass-button glass-button-primary rounded-lg px-4 py-2 text-sm font-medium text-indigo-200 transition"
           >
             닫기
           </button>

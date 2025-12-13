@@ -14,7 +14,7 @@ export default function ResultSummary({
   isLoading = false,
 }: ResultSummaryProps) {
   return (
-    <div className="rounded-md border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-slate-200">
+    <div className="glass-card rounded-lg px-4 py-3 text-sm text-slate-200">
       <div className="flex items-center gap-2">
         {isLoading && <LoadingSpinner size="sm" color="indigo" />}
         <p className="font-medium">

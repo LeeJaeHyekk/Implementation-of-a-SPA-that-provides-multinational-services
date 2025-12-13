@@ -3,25 +3,37 @@
 import type { ChangeEvent } from 'react'
 
 import { useSearchStore } from '../model/store'
+import FilterFieldWrapper from './FilterFieldWrapper'
+import { INPUT_BASE_CLASSES } from '../lib/constants'
 
 export default function ApplicationNumberFilter() {
   const applicationNumber = useSearchStore((state) => state.applicationNumber)
   const setApplicationNumber = useSearchStore((state) => state.setApplicationNumber)
 
+  const hasValue = (applicationNumber ?? '').trim().length > 0
+
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
     setApplicationNumber(event.target.value)
   }
 
+  function handleClear() {
+    setApplicationNumber('')
+  }
+
   return (
-    <div className="w-full">
-      <label className="text-sm text-slate-300">출원번호</label>
+    <FilterFieldWrapper
+      label="출원번호"
+      hasValue={hasValue}
+      onClear={handleClear}
+      clearAriaLabel="출원번호 필터 삭제"
+    >
       <input
         value={applicationNumber}
         onChange={handleChange}
-        className="mt-1 w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-400"
+        className={INPUT_BASE_CLASSES}
         placeholder="정확한 출원번호를 입력"
       />
-    </div>
+    </FilterFieldWrapper>
   )
 }
 

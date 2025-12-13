@@ -34,9 +34,6 @@
       "@/processes/*": [
         "./src/processes/*"
       ],
-      "@/pages/*": [
-        "./src/pages/*"
-      ],
       "@/shared/*": [
         "./src/shared/*"
       ],

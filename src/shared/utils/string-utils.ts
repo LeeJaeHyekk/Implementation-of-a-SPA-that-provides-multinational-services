@@ -6,7 +6,7 @@
 /**
  * 안전한 trim 처리
  */
-export function safeTrim(value: string | null | undefined): string {
+export function safeTrim(value?: string | null): string {
   if (!value || typeof value !== 'string') {
     return ''
   }
@@ -19,7 +19,7 @@ export function safeTrim(value: string | null | undefined): string {
 }
 
 /**
- * 안전한 문자열 변환
+ * 값을 안전하게 문자열로 변환
  */
 export function safeString(value: unknown): string {
   if (value === null || value === undefined) {
@@ -51,7 +51,7 @@ export function safeString(value: unknown): string {
 }
 
 /**
- * 안전한 toLowerCase
+ * 안전한 toLowerCase 처리
  */
 export function safeToLowerCase(value: string): string {
   try {
@@ -62,9 +62,9 @@ export function safeToLowerCase(value: string): string {
 }
 
 /**
- * 안전한 replace
+ * 안전한 replace 처리
  */
-export function safeReplace(value: string, pattern: RegExp | string, replacement: string): string {
+export function safeReplace(value: string, pattern: string | RegExp, replacement: string): string {
   try {
     return value.replace(pattern, replacement)
   } catch {
@@ -72,3 +72,11 @@ export function safeReplace(value: string, pattern: RegExp | string, replacement
   }
 }
 
+/**
+ * 문자열 배열을 쉼표로 구분하여 반환
+ * 빈 배열이거나 null인 경우 '-' 반환
+ */
+export function joinArrayOrDash(values: string[] | null | undefined): string {
+  if (!values || values.length === 0) return '-'
+  return values.join(', ')
+}

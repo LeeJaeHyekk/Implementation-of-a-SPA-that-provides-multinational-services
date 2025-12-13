@@ -55,3 +55,38 @@ export function extractYear(timestamp: number | null): number | null {
   }
 }
 
+/**
+ * 날짜 문자열을 yyyy.mm.dd 형식으로 포맷
+ * @param value - 날짜 문자열 (YYYYMMDD 또는 YYYY-MM-DD 형식)
+ * @returns 포맷된 날짜 문자열 (yyyy.mm.dd) 또는 원본 값
+ */
+export function formatDateToDot(value?: string | null): string {
+  if (!value) return '-'
+  
+  try {
+    // 하이픈 제거
+    const compact = value.replace(/-/g, '').trim()
+    
+    // YYYYMMDD 형식인지 확인
+    if (/^\d{8}$/.test(compact)) {
+      const year = compact.slice(0, 4)
+      const month = compact.slice(4, 6)
+      const day = compact.slice(6, 8)
+      return `${year}.${month}.${day}`
+    }
+    
+    // 이미 포맷된 형식인 경우 그대로 반환
+    return value
+  } catch {
+    return value
+  }
+}
+
+/**
+ * 날짜 배열을 yyyy.mm.dd 형식으로 포맷하여 쉼표로 구분
+ */
+export function formatDateArray(values: string[]): string {
+  if (!values || values.length === 0) return '-'
+  return values.map(formatDateToDot).join(', ')
+}
+

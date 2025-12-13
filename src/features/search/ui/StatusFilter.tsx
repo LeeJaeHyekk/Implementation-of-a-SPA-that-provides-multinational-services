@@ -1,44 +1,57 @@
 'use client'
 
-import type { ChangeEvent } from 'react'
+import { useEffect, useMemo, type ChangeEvent } from 'react'
 
 import { RegisterStatus } from '@/entities/trademark/model/types'
+import { getStatusOptionsForCountry } from '@/entities/trademark/lib'
+import { useCountryStore } from '@/features/country-switcher/model/store'
 
 import { useSearchStore } from '../model/store'
-
-const STATUS_OPTIONS: Array<{ value: RegisterStatus | 'all'; label: string }> = [
-  { value: 'all', label: '전체' },
-  { value: 'registered', label: '등록' },
-  { value: 'pending', label: '출원' },
-  { value: 'rejected', label: '거절' },
-  { value: 'expired', label: '실효' },
-  { value: 'live', label: 'LIVE' },
-  { value: 'dead', label: 'DEAD' },
-  { value: 'unknown', label: '알수없음' },
-]
+import FilterFieldWrapper from './FilterFieldWrapper'
+import { SELECT_BASE_CLASSES } from '../lib/constants'
 
 export default function StatusFilter() {
+  const country = useCountryStore((state) => state.country)
   const status = useSearchStore((state) => state.status)
   const setStatus = useSearchStore((state) => state.setStatus)
+
+  // 현재 국가에 맞는 상태 옵션을 동적으로 가져옴
+  const statusOptions = useMemo(() => {
+    return getStatusOptionsForCountry(country)
+  }, [country])
+
+  // 국가가 변경되면 현재 선택된 상태가 유효한지 확인하고, 유효하지 않으면 'all'로 리셋
+  useEffect(() => {
+    const isValidStatus = statusOptions.some((option) => option.value === status)
+    if (!isValidStatus && status !== 'all') {
+      setStatus('all')
+    }
+  }, [country, status, statusOptions, setStatus])
+
+  const hasValue = status !== 'all'
 
   function handleChange(event: ChangeEvent<HTMLSelectElement>) {
     setStatus(event.target.value as RegisterStatus | 'all')
   }
 
+  function handleClear() {
+    setStatus('all')
+  }
+
   return (
-    <div className="w-full">
-      <label className="text-sm text-slate-300">등록 상태</label>
-      <select
-        value={status ?? 'all'}
-        onChange={handleChange}
-        className="mt-1 w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-400"
-      >
-        {STATUS_OPTIONS.map((option) => (
+    <FilterFieldWrapper
+      label="등록 상태"
+      hasValue={hasValue}
+      onClear={handleClear}
+      clearAriaLabel="등록 상태 필터 삭제"
+    >
+      <select value={status ?? 'all'} onChange={handleChange} className={SELECT_BASE_CLASSES}>
+        {statusOptions.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>
         ))}
       </select>
-    </div>
+    </FilterFieldWrapper>
   )
 }

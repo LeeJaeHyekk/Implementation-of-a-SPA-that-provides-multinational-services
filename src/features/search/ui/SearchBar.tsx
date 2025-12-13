@@ -233,15 +233,13 @@ export default function SearchBar() {
 
   return (
     <div className="w-full">
-      <label className="text-sm text-slate-300">상표명 검색</label>
+      <label className="text-sm font-medium text-slate-200 drop-shadow-sm">상표명 검색</label>
       <div className="relative">
         <input
           value={rawInput}
           onChange={handleChange}
-          className={`mt-1 w-full rounded-md border bg-slate-900 px-3 py-2 pr-10 text-sm text-slate-100 outline-none transition-colors ${
-            errorMessage
-              ? 'border-red-500 focus:border-red-400'
-              : 'border-slate-700 focus:border-indigo-400'
+          className={`glass-input mt-1 w-full rounded-lg px-3 py-2 pr-10 text-sm text-slate-100 ${
+            errorMessage ? 'glass-input-error' : ''
           }`}
           placeholder="상품명 또는 영문명을 입력 (최소 1자, 최대 100자)"
           maxLength={VALIDATION_CONFIG.maxLength + 10} // 약간의 여유를 두어 사용자가 입력할 수 있게 함
@@ -253,7 +251,7 @@ export default function SearchBar() {
         )}
       </div>
       {errorMessage && (
-        <p className="mt-1 text-xs text-red-400" role="alert">
+        <p className="mt-1 text-xs font-medium text-red-300 drop-shadow-sm" role="alert">
           {errorMessage}
         </p>
       )}

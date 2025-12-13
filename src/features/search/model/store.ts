@@ -10,11 +10,14 @@ interface DateRange {
 }
 
 interface SearchState extends TrademarkFilters {
+  hasSearched: boolean
   setKeyword: (keyword: string) => void
   setApplicationNumber: (applicationNumber: string) => void
   setStatus: (status: TrademarkFilters['status']) => void
   setDateRange: (range: DateRange) => void
+  setHasSearched: (hasSearched: boolean) => void
   reset: () => void
+  resetFilters: () => void
 }
 
 const initialState: TrademarkFilters = {
@@ -29,9 +32,20 @@ const initialState: TrademarkFilters = {
 
 export const useSearchStore = create<SearchState>((set) => ({
   ...initialState,
+  hasSearched: false,
   setKeyword: (keyword) => set({ keyword }),
   setApplicationNumber: (applicationNumber) => set({ applicationNumber }),
   setStatus: (status) => set({ status }),
   setDateRange: (dateRange) => set({ dateRange }),
-  reset: () => set(initialState),
+  setHasSearched: (hasSearched) => set({ hasSearched }),
+  reset: () => set({ ...initialState, hasSearched: false }),
+  resetFilters: () =>
+    set({
+      applicationNumber: '',
+      status: 'all',
+      dateRange: {
+        from: undefined,
+        to: undefined,
+      },
+    }),
 }))

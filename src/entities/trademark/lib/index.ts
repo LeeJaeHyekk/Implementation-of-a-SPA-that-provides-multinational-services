@@ -20,3 +20,6 @@ export * from './indexing'
 
 // 타입 가드
 export * from './type-guards'
+
+// 유틸리티
+export * from './getStatusOptions'

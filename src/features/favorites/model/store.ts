@@ -1,7 +1,7 @@
 'use client'
 
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 
 interface FavoritesState {
   favorites: string[]
@@ -9,6 +9,21 @@ interface FavoritesState {
   remove: (id: string) => void
   isFavorite: (id: string) => boolean
   clear: () => void
+}
+
+/**
+ * SSR 환경에서 안전한 localStorage 접근
+ */
+function getStorage() {
+  if (typeof window === 'undefined') {
+    // SSR 환경에서는 메모리 스토리지 반환 (실제 저장은 안 됨)
+    return {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {},
+    }
+  }
+  return localStorage
 }
 
 export const useFavoritesStore = create<FavoritesState>()(
@@ -29,6 +44,9 @@ export const useFavoritesStore = create<FavoritesState>()(
     }),
     {
       name: 'favorites-storage',
+      storage: createJSONStorage(() => getStorage()),
+      // 부분적으로 저장할 필드 지정 (favorites만 저장)
+      partialize: (state) => ({ favorites: state.favorites }),
     },
   ),
 )

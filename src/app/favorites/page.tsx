@@ -38,14 +38,14 @@ export default function FavoritesRoute() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
       <div className="mb-4">
-        <p className="text-sm text-indigo-300">즐겨찾기</p>
-        <h1 className="text-3xl font-bold text-slate-50">저장된 상표 {favorites.length}건</h1>
+        <p className="text-sm font-medium text-indigo-300 drop-shadow-sm">즐겨찾기</p>
+        <h1 className="text-3xl font-bold text-slate-50 drop-shadow-md">저장된 상표 {favorites.length}건</h1>
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-slate-300">불러오는 중...</p>
+        <p className="text-sm font-medium text-slate-300 drop-shadow-sm">불러오는 중...</p>
       ) : items.length === 0 ? (
-        <p className="rounded-md border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-slate-300">
+        <p className="glass-card rounded-lg px-4 py-3 text-sm font-medium text-slate-300">
           즐겨찾기한 상표가 없습니다.
         </p>
       ) : (

@@ -2,13 +2,435 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Glassmorphism 공통 변수 */
+  --glass-bg-base: rgba(15, 23, 42, 0.4);
+  --glass-bg-hover: rgba(15, 23, 42, 0.5);
+  --glass-bg-focus: rgba(15, 23, 42, 0.5);
+  --glass-bg-error: rgba(239, 68, 68, 0.1);
+  
+  --glass-border-base: rgba(148, 163, 184, 0.2);
+  --glass-border-hover: rgba(129, 140, 248, 0.3);
+  --glass-border-focus: rgba(129, 140, 248, 0.4);
+  --glass-border-error: rgba(239, 68, 68, 0.4);
+  
+  --glass-blur-base: blur(12px);
+  --glass-blur-hover: blur(16px);
+  --glass-blur-focus: blur(16px);
+  
+  --glass-shadow-base: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  --glass-shadow-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 0 0 2px rgba(129, 140, 248, 0.1);
+  --glass-shadow-focus: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 0 0 3px rgba(129, 140, 248, 0.1);
+  --glass-shadow-error: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 0 0 3px rgba(239, 68, 68, 0.1);
+  
+  --glass-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* 드롭다운 화살표 아이콘 */
+  --glass-arrow-default: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23e2e8f0'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  --glass-arrow-hover: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a5b4fc'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  --glass-arrow-focus: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%231298f8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  
+  /* Option 스타일 변수 - backdrop-filter 미지원 대신 진한 배경색 사용 */
+  --glass-option-bg: rgba(15, 23, 42, 0.98);
+  --glass-option-bg-hover: rgba(99, 102, 241, 0.5);
+  --glass-option-bg-selected: rgba(99, 102, 241, 0.6);
+  --glass-option-color: #e2e8f0;
+}
+
 body {
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background-color: #0b0f19;
   color: #e5e7eb;
+  position: relative;
+  min-height: 100vh;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+}
+
+/* 배경 이미지 애니메이션 - Seamless Loop */
+@keyframes pan-slow {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(-15px, -20px) scale(1.02);
+  }
+  50% {
+    transform: translate(15px, 15px) scale(1.01);
+  }
+  75% {
+    transform: translate(-10px, 10px) scale(1.02);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes zoom-slow {
+  0% {
+    transform: scale(1);
+  }
+  33.33% {
+    transform: scale(1.03);
+  }
+  66.66% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes gradient-shift {
+  0% {
+    opacity: 0.6;
+  }
+  25% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  75% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes twinkle {
+  0% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+}
+
+@keyframes twinkle-delayed {
+  0% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.3);
+  }
+  100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+}
+
+@keyframes twinkle-delayed-2 {
+  0% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.4);
+  }
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+}
+
+@keyframes mist {
+  0% {
+    transform: translateX(-100%) translateY(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.15;
+  }
+  90% {
+    opacity: 0.1;
+  }
+  100% {
+    transform: translateX(100%) translateY(0);
+    opacity: 0;
+  }
+}
+
+/* 추가: 부드러운 원형 움직임 애니메이션 */
+@keyframes circular-float {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(20px, -20px) rotate(90deg);
+  }
+  50% {
+    transform: translate(0, -40px) rotate(180deg);
+  }
+  75% {
+    transform: translate(-20px, -20px) rotate(270deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(360deg);
+  }
+}
+
+/* Seamless Loop 애니메이션 - 시작과 끝이 동일 */
+.animate-pan-slow {
+  animation: pan-slow 20s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  will-change: transform;
+}
+
+.animate-zoom-slow {
+  animation: zoom-slow 15s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  will-change: transform;
+}
+
+.animate-gradient-shift {
+  animation: gradient-shift 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  will-change: opacity;
+}
+
+.animate-twinkle {
+  animation: twinkle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  will-change: opacity, transform;
+}
+
+.animate-twinkle-delayed {
+  animation: twinkle-delayed 4s cubic-bezier(0.4, 0, 0.6, 1) infinite 1s;
+  will-change: opacity, transform;
+}
+
+.animate-twinkle-delayed-2 {
+  animation: twinkle-delayed-2 5s cubic-bezier(0.4, 0, 0.6, 1) infinite 2s;
+  will-change: opacity, transform;
+}
+
+.animate-mist {
+  animation: mist 25s linear infinite;
+  will-change: transform, opacity;
+}
+
+/* Glassmorphism 스타일 - 유리 느낌 디자인 */
+.glass-input {
+  background-color: var(--glass-bg-base);
+  backdrop-filter: var(--glass-blur-base);
+  -webkit-backdrop-filter: var(--glass-blur-base);
+  border: 1px solid var(--glass-border-base);
+  box-shadow: var(--glass-shadow-base);
+  transition: var(--glass-transition);
+}
+
+.glass-input:hover {
+  background-color: var(--glass-bg-hover);
+  backdrop-filter: var(--glass-blur-hover);
+  -webkit-backdrop-filter: var(--glass-blur-hover);
+  border-color: var(--glass-border-hover);
+}
+
+.glass-input:focus {
+  background-color: var(--glass-bg-focus);
+  backdrop-filter: var(--glass-blur-focus);
+  -webkit-backdrop-filter: var(--glass-blur-focus);
+  border-color: var(--glass-border-focus);
+  box-shadow: var(--glass-shadow-focus);
+  outline: none;
+}
+
+.glass-input::placeholder {
+  color: rgba(148, 163, 184, 0.6);
+}
+
+.glass-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: var(--glass-bg-base);
+  backdrop-filter: var(--glass-blur-base);
+  -webkit-backdrop-filter: var(--glass-blur-base);
+  border: 1px solid var(--glass-border-base);
+  box-shadow: var(--glass-shadow-base);
+  transition: var(--glass-transition);
+  cursor: pointer;
+  background-image: var(--glass-arrow-default);
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1.25em 1.25em;
+  padding-right: 2.5rem;
+}
+
+.glass-select::-ms-expand {
+  display: none;
+}
+
+.glass-select:hover {
+  background-color: var(--glass-bg-hover);
+  backdrop-filter: var(--glass-blur-hover);
+  -webkit-backdrop-filter: var(--glass-blur-hover);
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--glass-shadow-hover);
+  transform: translateY(-1px);
+  background-image: var(--glass-arrow-hover);
+}
+
+.glass-select:focus {
+  background-color: var(--glass-bg-focus);
+  backdrop-filter: var(--glass-blur-focus);
+  -webkit-backdrop-filter: var(--glass-blur-focus);
+  border-color: var(--glass-border-focus);
+  box-shadow: var(--glass-shadow-focus);
+  outline: none;
+  background-image: var(--glass-arrow-focus);
+}
+
+/* Option 스타일 - 브라우저 호환성을 위해 backdrop-filter 제거 */
+.glass-select option {
+  background-color: var(--glass-option-bg);
+  color: var(--glass-option-color);
+  font-size: inherit;
+  line-height: 1.5;
+  /* padding, border-radius, margin은 브라우저마다 제한적이므로 제거 */
+}
+
+/* Option 호버 효과 - 브라우저 호환성을 위해 backdrop-filter 제거 */
+.glass-select option:hover,
+.glass-select option:focus {
+  background-color: var(--glass-option-bg-hover);
+  color: var(--glass-option-color);
+  font-weight: 500;
+}
+
+/* Option 선택된 상태 - 브라우저 호환성을 위해 backdrop-filter 제거 */
+.glass-select option:checked,
+.glass-select option[selected] {
+  background-color: var(--glass-option-bg-selected);
+  color: var(--glass-option-color);
+  font-weight: 600;
+}
+
+.glass-button {
+  background-color: var(--glass-bg-base);
+  backdrop-filter: var(--glass-blur-base);
+  -webkit-backdrop-filter: var(--glass-blur-base);
+  border: 1px solid var(--glass-border-base);
+  box-shadow: var(--glass-shadow-base);
+  transition: var(--glass-transition);
+  cursor: pointer;
+}
+
+.glass-button:hover {
+  background-color: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--glass-shadow-hover);
+  transform: translateY(-1px);
+}
+
+.glass-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+}
+
+.glass-button-primary {
+  background-color: rgba(99, 102, 241, 0.2);
+  border-color: rgba(129, 140, 248, 0.3);
+}
+
+.glass-button-primary:hover {
+  background-color: rgba(99, 102, 241, 0.3);
+  border-color: rgba(129, 140, 248, 0.5);
+}
+
+/* 에러 상태 */
+.glass-input-error {
+  border-color: var(--glass-border-error);
+  box-shadow: var(--glass-shadow-error);
+}
+
+.glass-input-error:focus {
+  border-color: rgba(248, 113, 113, 0.5);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 0 0 3px rgba(248, 113, 113, 0.15);
+}
+
+/* 카드 스타일 */
+.glass-card {
+  background-color: var(--glass-bg-base);
+  backdrop-filter: var(--glass-blur-base);
+  -webkit-backdrop-filter: var(--glass-blur-base);
+  border: 1px solid var(--glass-border-base);
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.4), 0 4px 8px -2px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  transition: var(--glass-transition);
+}
+
+.glass-card:hover {
+  background-color: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
+  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.5), 0 6px 12px -2px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+/* 배지 스타일 */
+.glass-badge {
+  background-color: rgba(99, 102, 241, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(129, 140, 248, 0.3);
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+}
+
+/* 헤더/스티키 영역 유리 효과 */
+.glass-header {
+  background-color: var(--glass-bg-base);
+  backdrop-filter: var(--glass-blur-base);
+  -webkit-backdrop-filter: var(--glass-blur-base);
+  border-bottom: 1px solid var(--glass-border-base);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+}
+
+/* 애니메이션 유틸리티 */
+@keyframes slide-in-from-top {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+.slide-in-from-top-2 {
+  animation: slide-in-from-top 0.2s ease-out;
 }
