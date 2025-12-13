@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, use } from 'react'
+import { useMemo, use, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 import FavoriteButton from '@/features/favorites/ui/FavoriteButton'
@@ -42,6 +42,13 @@ export default function TrademarkDetailRoute({ params }: TrademarkDetailRoutePro
     [trademarks, resolvedParams.id],
   )
 
+  // 페이지 제목 동적 업데이트
+  useEffect(() => {
+    if (typeof document !== 'undefined' && trademark) {
+      document.title = `${trademark.productName} | 다국가 상표 검색`
+    }
+  }, [trademark])
+
   return (
     <QueryStateHandler
       isLoading={isLoading || !data}
@@ -54,15 +61,17 @@ export default function TrademarkDetailRoute({ params }: TrademarkDetailRoutePro
       errorActionLabel="검색으로 돌아가기"
     >
       {trademark ? (
-        <div className={LAYOUT_CLASSES.centered}>
-          <div className={`${LAYOUT_CLASSES.centeredContent} ${LAYOUT_CLASSES.spaceY}`}>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <BackButton />
-              <FavoriteButton trademarkId={trademark.id} />
+        <>
+          <div className={LAYOUT_CLASSES.centered}>
+            <div className={`${LAYOUT_CLASSES.centeredContent} ${LAYOUT_CLASSES.spaceY}`}>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <BackButton />
+                <FavoriteButton trademarkId={trademark.id} />
+              </div>
+              <TrademarkDetail trademark={trademark} />
             </div>
-            <TrademarkDetail trademark={trademark} />
           </div>
-        </div>
+        </>
       ) : (
         <div className={LAYOUT_CLASSES.centered}>
           <div className={LAYOUT_CLASSES.centeredContent}>

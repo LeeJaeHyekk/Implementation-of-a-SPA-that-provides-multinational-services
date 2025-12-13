@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Allow: /search
+Allow: /favorites
+Disallow: /trademark/
+
+# Sitemap
+Sitemap: https://trademark-search.example.com/sitemap.xml
+

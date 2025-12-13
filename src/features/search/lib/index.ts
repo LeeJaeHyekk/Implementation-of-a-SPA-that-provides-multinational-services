@@ -20,6 +20,9 @@ export * from './cache/normalization-cache'
 // 필터 결합
 export * from './combineFilters'
 
+// 필터 칩 생성
+export * from './createFilterChips'
+
 // 하위 호환성을 위한 레거시 API (@deprecated)
 export { normalizeKeyword, sanitizeKeyword, isKeywordMatch } from './sanitizeKeyword'
 

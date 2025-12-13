@@ -1,51 +1,27 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 
-import { useCountryStore } from '@/features/country-switcher/model/store'
-import {
-  createKoreanSanitizer,
-  createEnglishSanitizer,
-  createMultiLanguageSanitizer,
-  validateKeyword,
-  handleSearchError,
-  logSearchError,
-} from '@/features/search/lib'
+import { validateKeyword, handleSearchError, logSearchError } from '@/features/search/lib'
 import { useSearchStore } from '@/features/search/model/store'
 import { useHasActiveFilters } from '@/features/search/model/selectors'
+import { useSanitizer } from '@/shared/hooks'
+import { SEARCH_CONSTANTS } from '@/shared/config/constants'
 import LoadingSpinner from '@/shared/ui/LoadingSpinner'
 import FilterSection from './FilterSection'
 
-// 검증 설정
-const VALIDATION_CONFIG = {
-  minLength: 1,
-  maxLength: 100,
-  maxRepeatedCharacters: 3,
-}
-
 export default function SearchBarWithFilters() {
-  const country = useCountryStore((state) => state.country)
   const keyword = useSearchStore((state) => state.keyword)
   const setKeyword = useSearchStore((state) => state.setKeyword)
   const setHasSearched = useSearchStore((state) => state.setHasSearched)
   const hasActiveFilters = useHasActiveFilters()
+  const sanitizer = useSanitizer()
   
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [rawInput, setRawInput] = useState(keyword ?? '')
   const [isProcessing, setIsProcessing] = useState(false)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
-
-  // 국가별로 적절한 정제기 선택
-  const sanitizer = useMemo(
-    () =>
-      country === 'KR'
-        ? createKoreanSanitizer({ validation: VALIDATION_CONFIG })
-        : country === 'US'
-          ? createEnglishSanitizer({ validation: VALIDATION_CONFIG })
-          : createMultiLanguageSanitizer({ validation: VALIDATION_CONFIG }),
-    [country],
-  )
 
   // 검색 실행
   const handleSearch = useCallback(
@@ -67,9 +43,9 @@ export default function SearchBarWithFilters() {
         // 검색어가 입력된 경우에만 검증 및 정제 수행
         if (hasKeyword) {
           // 검증 수행 (에러 처리)
-          let validation
-          try {
-            validation = validateKeyword(trimmedInput, VALIDATION_CONFIG)
+        let validation
+        try {
+          validation = validateKeyword(trimmedInput, SEARCH_CONSTANTS.VALIDATION_CONFIG)
           } catch (error) {
             const searchError = handleSearchError(error, {
               inputValue: trimmedInput,
@@ -149,6 +125,20 @@ export default function SearchBarWithFilters() {
     handleSearch(rawInput ?? '')
   }
 
+  // 키보드 네비게이션: Escape 키로 필터 닫기
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape' && isFilterOpen) {
+        setIsFilterOpen(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isFilterOpen])
+
   // 입력값 변경 핸들러 (검증만 수행, 검색은 실행하지 않음)
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
     const inputValue = event.target.value
@@ -205,11 +195,19 @@ export default function SearchBarWithFilters() {
               <input
                 value={rawInput ?? ''}
                 onChange={handleChange}
+                onKeyDown={(event) => {
+                  // Enter 키로 검색 실행
+                  if (event.key === 'Enter' && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
+                    event.preventDefault()
+                    handleSearch(rawInput ?? '')
+                  }
+                }}
                 className={`glass-input h-[42px] w-full rounded-lg px-3 pr-8 text-xs sm:pr-10 sm:text-sm text-slate-100 md:px-4 md:text-base ${
                   errorMessage ? 'glass-input-error' : ''
                 }`}
                 placeholder="상품명 또는 영문명을 입력 (최소 1자, 최대 100자)"
-                maxLength={VALIDATION_CONFIG.maxLength + 10}
+                maxLength={SEARCH_CONSTANTS.VALIDATION_CONFIG.maxLength + 10}
+                aria-label="상표명 검색 입력"
               />
               {isProcessing && (
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 sm:right-3 md:right-4">

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 import TrademarkCard from '@/entities/trademark/ui/TrademarkCard'
@@ -20,6 +20,13 @@ export default function FavoritesRoute() {
   const { data: krData, isLoading: isLoadingKr, isError: isErrorKr } = useTrademarksQuery({ country: 'KR' })
   const { data: usData, isLoading: isLoadingUs, isError: isErrorUs } = useTrademarksQuery({ country: 'US' })
   const router = useRouter()
+
+  // 페이지 제목 동적 업데이트
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.title = `즐겨찾기 (${favorites.length}건) | 다국가 상표 검색`
+    }
+  }, [favorites.length])
 
   const items = useMemo(() => {
     const merged: NormalizedTrademark[] = []
@@ -43,28 +50,30 @@ export default function FavoritesRoute() {
   }
 
   return (
-    <div className={LAYOUT_CLASSES.container}>
-      <div className={LAYOUT_CLASSES.pageHeader}>
-        <p className={LAYOUT_CLASSES.pageSubtitle}>즐겨찾기</p>
-        <h1 className={LAYOUT_CLASSES.pageTitle}>저장된 상표 {favorites.length}건</h1>
-      </div>
-
-      {isError ? (
-        <ErrorState
-          message="데이터를 불러오는 중 오류가 발생했습니다."
-          action={<NavigateButton to="search" className="mt-3" />}
-        />
-      ) : isLoading ? (
-        <LoadingSpinner size="lg" color="indigo" text="데이터를 불러오는 중..." fullScreen />
-      ) : items.length === 0 ? (
-        <EmptyState message="즐겨찾기한 상표가 없습니다." />
-      ) : (
-        <div className={GRID_CLASSES.cardGrid}>
-          {items.map((item) => (
-            <TrademarkCard key={item.id} trademark={item} onSelect={handleSelect} />
-          ))}
+    <>
+      <div className={LAYOUT_CLASSES.container}>
+        <div className={LAYOUT_CLASSES.pageHeader}>
+          <p className={LAYOUT_CLASSES.pageSubtitle}>즐겨찾기</p>
+          <h1 className={LAYOUT_CLASSES.pageTitle}>저장된 상표 {favorites.length}건</h1>
         </div>
-      )}
-    </div>
+
+        {isError ? (
+          <ErrorState
+            message="데이터를 불러오는 중 오류가 발생했습니다."
+            action={<NavigateButton to="search" className="mt-3" />}
+          />
+        ) : isLoading ? (
+          <LoadingSpinner size="lg" color="indigo" text="데이터를 불러오는 중..." fullScreen />
+        ) : items.length === 0 ? (
+          <EmptyState message="즐겨찾기한 상표가 없습니다." />
+        ) : (
+          <div className={GRID_CLASSES.cardGrid}>
+            {items.map((item) => (
+              <TrademarkCard key={item.id} trademark={item} onSelect={handleSelect} />
+            ))}
+          </div>
+        )}
+      </div>
+    </>
   )
 }

@@ -1,49 +1,22 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 
-import { useCountryStore } from '@/features/country-switcher/model/store'
-import {
-  createKoreanSanitizer,
-  createEnglishSanitizer,
-  createMultiLanguageSanitizer,
-  validateKeyword,
-  handleSearchError,
-  logSearchError,
-} from '../lib'
+import { validateKeyword, handleSearchError, logSearchError } from '../lib'
 import { useSearchStore } from '../model/store'
+import { useSanitizer } from '@/shared/hooks'
+import { SEARCH_CONSTANTS } from '@/shared/config/constants'
 import LoadingSpinner from '@/shared/ui/LoadingSpinner'
 
-// 검증 설정
-const VALIDATION_CONFIG = {
-  minLength: 1,
-  maxLength: 100,
-  maxRepeatedCharacters: 3,
-}
-
-// Debounce 지연 시간 (ms)
-const DEBOUNCE_DELAY = 300
-
 export default function SearchBar() {
-  const country = useCountryStore((state) => state.country)
   const keyword = useSearchStore((state) => state.keyword)
   const setKeyword = useSearchStore((state) => state.setKeyword)
+  const sanitizer = useSanitizer()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [rawInput, setRawInput] = useState(keyword)
   const [isProcessing, setIsProcessing] = useState(false)
   const debounceTimerRef = useRef<number | ReturnType<typeof globalThis.setTimeout> | null>(null)
-
-  // 국가별로 적절한 정제기 선택
-  const sanitizer = useMemo(
-    () =>
-      country === 'KR'
-        ? createKoreanSanitizer({ validation: VALIDATION_CONFIG })
-        : country === 'US'
-          ? createEnglishSanitizer({ validation: VALIDATION_CONFIG })
-          : createMultiLanguageSanitizer({ validation: VALIDATION_CONFIG }),
-    [country],
-  )
 
   // 검색어 정제 및 검증
   const sanitizeAndValidate = useCallback(
@@ -87,7 +60,7 @@ export default function SearchBar() {
         // 검증 수행 (에러 처리)
         let validation
         try {
-          validation = validateKeyword(inputValue, VALIDATION_CONFIG)
+          validation = validateKeyword(inputValue, SEARCH_CONSTANTS.VALIDATION_CONFIG)
         } catch (error) {
           const searchError = handleSearchError(error, { inputValue, step: 'validation' })
           logSearchError(searchError)
@@ -197,7 +170,7 @@ export default function SearchBar() {
             logSearchError(searchError)
             setErrorMessage('검색어 처리 중 오류가 발생했습니다.')
           }
-        }, DEBOUNCE_DELAY)
+        }, SEARCH_CONSTANTS.DEBOUNCE_DELAY)
       } catch (error) {
         const searchError = handleSearchError(error, { step: 'set_timeout' })
         logSearchError(searchError)
@@ -242,7 +215,7 @@ export default function SearchBar() {
             errorMessage ? 'glass-input-error' : ''
           }`}
           placeholder="상품명 또는 영문명을 입력 (최소 1자, 최대 100자)"
-          maxLength={VALIDATION_CONFIG.maxLength + 10} // 약간의 여유를 두어 사용자가 입력할 수 있게 함
+          maxLength={SEARCH_CONSTANTS.VALIDATION_CONFIG.maxLength + 10} // 약간의 여유를 두어 사용자가 입력할 수 있게 함
         />
         {isProcessing && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
