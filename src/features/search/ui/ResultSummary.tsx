@@ -1,3 +1,5 @@
+import LoadingSpinner from '@/shared/ui/LoadingSpinner'
+
 interface ResultSummaryProps {
   total: number
   filtered: number
@@ -13,9 +15,12 @@ export default function ResultSummary({
 }: ResultSummaryProps) {
   return (
     <div className="rounded-md border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-slate-200">
-      <p className="font-medium">
-        {country} 상표 {isLoading ? '불러오는 중...' : `${filtered} / ${total}건`}
-      </p>
+      <div className="flex items-center gap-2">
+        {isLoading && <LoadingSpinner size="sm" color="indigo" />}
+        <p className="font-medium">
+          {country} 상표 {isLoading ? '불러오는 중...' : `${filtered} / ${total}건`}
+        </p>
+      </div>
     </div>
   )
 }

@@ -1,60 +1,60 @@
+import { handleSearchError, logSearchError } from '@/features/search/lib'
+import { validateArray, validateObject, safeFilter } from '@/shared/utils/error-handler'
+import { matchKeyword, matchApplicationNumber, matchStatus, matchDateRange } from './matchers'
+
 import { NormalizedTrademark, RegisterStatus, TrademarkFilters } from '../model/types'
 
-function includesKeyword(value: string | null | undefined, keyword: string) {
-  if (!value) return false
-  return value.toLowerCase().includes(keyword.toLowerCase())
-}
+// 매칭 로직은 matchers 모듈로 이동됨
 
-function isKeywordMatch(trademark: NormalizedTrademark, keyword?: string) {
-  if (!keyword) return true
-  return (
-    includesKeyword(trademark.productName, keyword) ||
-    includesKeyword(trademark.productNameEng, keyword)
-  )
-}
+/**
+ * 키워드 필터링 (모듈화)
+ */
+export function filterByKeyword(items: NormalizedTrademark[], keyword?: string): NormalizedTrademark[] {
+  if (!validateArray<NormalizedTrademark>(items)) {
+    const error = handleSearchError(
+      new Error('items는 배열이어야 합니다.'),
+      { items, keyword, type: typeof items },
+    )
+    logSearchError(error)
+    return []
+  }
 
-function isApplicationNumberMatch(trademark: NormalizedTrademark, applicationNumber?: string) {
-  if (!applicationNumber) return true
-  const target = applicationNumber.trim()
-  if (!target) return true
-  return trademark.applicationNumber.trim() === target
-}
-
-function isStatusMatch(trademark: NormalizedTrademark, status?: RegisterStatus | 'all') {
-  if (!status || status === 'all') return true
-  return trademark.registerStatus === status
-}
-
-function toTimestamp(value?: string | null) {
-  if (!value) return null
-  const compact = value.trim()
-  const normalized =
-    /^\d{8}$/.test(compact) && !compact.includes('-')
-      ? `${compact.slice(0, 4)}-${compact.slice(4, 6)}-${compact.slice(6, 8)}`
-      : compact
-  const timestamp = Date.parse(normalized)
-  return Number.isNaN(timestamp) ? null : timestamp
-}
-
-function isDateInRange(value?: string | null, from?: string, to?: string) {
-  if (!from && !to) return true
-  const timestamp = toTimestamp(value)
-  if (!timestamp) return false
-  const fromTs = toTimestamp(from) ?? Number.NEGATIVE_INFINITY
-  const toTs = toTimestamp(to) ?? Number.POSITIVE_INFINITY
-  return timestamp >= fromTs && timestamp <= toTs
-}
-
-export function filterByKeyword(items: NormalizedTrademark[], keyword?: string) {
   if (!keyword) return items
-  const result = items.filter((item) => isKeywordMatch(item, keyword))
-  globalThis.console?.log?.('[Filter] keyword', { keyword, before: items.length, after: result.length })
+
+  const result = safeFilter(items, (item) => matchKeyword(item, keyword), { keyword, function: 'filterByKeyword' })
+
+  globalThis.console?.log?.('[Filter] keyword', {
+    keyword,
+    before: items.length,
+    after: result.length,
+  })
   return result
 }
 
-export function filterByApplicationNumber(items: NormalizedTrademark[], applicationNumber?: string) {
-  if (!applicationNumber?.trim()) return items
-  const result = items.filter((item) => isApplicationNumberMatch(item, applicationNumber))
+/**
+ * 출원번호 필터링 (모듈화)
+ */
+export function filterByApplicationNumber(
+  items: NormalizedTrademark[],
+  applicationNumber?: string,
+): NormalizedTrademark[] {
+  if (!validateArray<NormalizedTrademark>(items)) {
+    const error = handleSearchError(
+      new Error('items는 배열이어야 합니다.'),
+      { items, applicationNumber, type: typeof items },
+    )
+    logSearchError(error)
+    return []
+  }
+
+  if (!applicationNumber) return items
+
+  const result = safeFilter(
+    items,
+    (item) => matchApplicationNumber(item, applicationNumber),
+    { applicationNumber, function: 'filterByApplicationNumber' },
+  )
+
   globalThis.console?.log?.('[Filter] applicationNumber', {
     applicationNumber,
     before: items.length,
@@ -63,21 +63,70 @@ export function filterByApplicationNumber(items: NormalizedTrademark[], applicat
   return result
 }
 
-export function filterByStatus(items: NormalizedTrademark[], status?: RegisterStatus | 'all') {
+/**
+ * 상태 필터링 (모듈화)
+ */
+export function filterByStatus(
+  items: NormalizedTrademark[],
+  status?: RegisterStatus | 'all',
+): NormalizedTrademark[] {
+  if (!validateArray<NormalizedTrademark>(items)) {
+    const error = handleSearchError(
+      new Error('items는 배열이어야 합니다.'),
+      { items, status, type: typeof items },
+    )
+    logSearchError(error)
+    return []
+  }
+
   if (!status || status === 'all') return items
-  const result = items.filter((item) => isStatusMatch(item, status))
-  globalThis.console?.log?.('[Filter] status', { status, before: items.length, after: result.length })
+
+  const result = safeFilter(items, (item) => matchStatus(item, status), { status, function: 'filterByStatus' })
+
+  globalThis.console?.log?.('[Filter] status', {
+    status,
+    before: items.length,
+    after: result.length,
+  })
   return result
 }
 
+/**
+ * 날짜 범위 필터링 (모듈화)
+ */
 export function filterByDateRange(
   items: NormalizedTrademark[],
   dateRange?: TrademarkFilters['dateRange'],
-) {
+): NormalizedTrademark[] {
+  if (!validateArray<NormalizedTrademark>(items)) {
+    const error = handleSearchError(
+      new Error('items는 배열이어야 합니다.'),
+      { items, dateRange, type: typeof items },
+    )
+    logSearchError(error)
+    return []
+  }
+
   if (!dateRange) return items
+
+  if (!validateObject(dateRange)) {
+    const error = handleSearchError(
+      new Error('dateRange는 객체여야 합니다.'),
+      { items, dateRange, type: typeof dateRange },
+    )
+    logSearchError(error)
+    return items
+  }
+
   const { from, to } = dateRange
   if (!from && !to) return items
-  const result = items.filter((item) => isDateInRange(item.applicationDate, from, to))
+
+  const result = safeFilter(
+    items,
+    (item) => matchDateRange(item, from, to),
+    { dateRange, function: 'filterByDateRange' },
+  )
+
   globalThis.console?.log?.('[Filter] dateRange', {
     from,
     to,
@@ -87,16 +136,66 @@ export function filterByDateRange(
   return result
 }
 
-export function filterTrademarks(items: NormalizedTrademark[], filters: TrademarkFilters) {
-  const afterApplicationNumber = filterByApplicationNumber(items, filters.applicationNumber)
-  const afterKeyword = filterByKeyword(afterApplicationNumber, filters.keyword)
-  const afterStatus = filterByStatus(afterKeyword, filters.status)
-  globalThis.console?.log?.('[Filter] pipeline beforeDate', {
+/**
+ * 필터링 파이프라인 (최적화된 순서)
+ * 빠르게 걸러낼 수 있는 필터를 먼저 적용하여 성능 향상
+ * 순서: 출원번호 (정확 일치) > 상태 (간단한 비교) > 키워드 (복잡한 검색) > 날짜 범위 (파싱 필요)
+ */
+export function filterTrademarks(
+  items: NormalizedTrademark[],
+  filters: TrademarkFilters,
+): NormalizedTrademark[] {
+  // 입력값 검증
+  if (!validateArray<NormalizedTrademark>(items)) {
+    const error = handleSearchError(
+      new Error('items는 배열이어야 합니다.'),
+      { items, filters, type: typeof items },
+    )
+    logSearchError(error)
+    return []
+  }
+
+  if (!validateObject<TrademarkFilters>(filters)) {
+    const error = handleSearchError(
+      new Error('filters는 객체여야 합니다.'),
+      { items, filters, type: typeof filters },
+    )
+    logSearchError(error)
+    return items
+  }
+
+  // 필터링 파이프라인 (최적화된 순서)
+  // 각 단계에서 에러 발생 시 이전 단계 결과 사용 (안전한 폴백)
+  const pipeline = [
+    () => filterByApplicationNumber(items, filters.applicationNumber),
+    (prev: NormalizedTrademark[]) => filterByStatus(prev, filters.status),
+    (prev: NormalizedTrademark[]) => filterByKeyword(prev, filters.keyword),
+    (prev: NormalizedTrademark[]) => filterByDateRange(prev, filters.dateRange),
+  ]
+
+  let result = items
+  for (let i = 0; i < pipeline.length; i++) {
+    const step = pipeline[i]
+    try {
+      result = step(result)
+    } catch (error) {
+      const searchError = handleSearchError(error, {
+        items: result,
+        filters,
+        step: `filter_step_${i}`,
+      })
+      logSearchError(searchError)
+      // 에러 발생 시 이전 결과 유지
+    }
+  }
+
+  globalThis.console?.log?.('[Filter] pipeline', {
     applicationNumber: filters.applicationNumber,
     keyword: filters.keyword,
     status: filters.status,
     before: items.length,
-    after: afterStatus.length,
+    after: result.length,
   })
-  return filterByDateRange(afterStatus, filters.dateRange)
+
+  return result
 }

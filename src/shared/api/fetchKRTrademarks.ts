@@ -1,9 +1,9 @@
-import { normalizeTrademarks } from '@/entities/trademark/lib'
+import { normalizeTrademarks, preprocessTrademarks } from '@/entities/trademark/lib'
 import { KRTrademarkRaw } from '@/entities/trademark/model'
 
 import { loadLocalJson } from './loadLocalJson'
-import krSample from '../../data/trademarks_kr_sample.json' assert { type: 'json' }
-import krFull from '../../data/trademarks_kr_trademarks.json' assert { type: 'json' }
+import krSample from '../../data/trademarks_kr_sample.json' with { type: 'json' }
+import krFull from '../../data/trademarks_kr_trademarks.json' with { type: 'json' }
 
 const KR_DATA_LOADERS = [
   () => Promise.resolve({ default: krSample as KRTrademarkRaw[] }),
@@ -17,10 +17,15 @@ export async function fetchKRTrademarks() {
   })
 
   const normalized = normalizeTrademarks({ country: 'KR', items: data })
+  
+  // 검색 성능 향상을 위한 전처리
+  const preprocessed = preprocessTrademarks(normalized)
+  
   globalThis.console?.log?.('[KRFetchDebug]', {
     rawCount: Array.isArray(data) ? data.length : 0,
     normalizedCount: normalized.length,
+    preprocessedCount: preprocessed.length,
   })
-  return normalized
+  return preprocessed
 }
 

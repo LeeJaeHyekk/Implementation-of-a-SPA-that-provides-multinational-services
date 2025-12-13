@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import TrademarkCard from '@/entities/trademark/ui/TrademarkCard'
 import { useCountryStore } from '@/features/country-switcher/model/store'
 import { useSearchFilters } from '@/features/search/model/selectors'
-import { combineFilters } from '@/features/search/lib/combineFilters'
+import { combineFilters, combineFiltersAsync } from '@/features/search/lib'
 import { useFavoritesStore } from '@/features/favorites/model/store'
 import { useSortingStore } from '@/features/sorting/model/store'
 import { sortTrademarks } from '@/features/sorting/lib/sortTrademarks'
@@ -14,6 +14,7 @@ import { useTrademarksQuery } from '@/shared/api/useTrademarksQuery'
 import { NormalizedTrademark } from '@/entities/trademark/model'
 import ResultSummary from '@/features/search/ui/ResultSummary'
 import SortSelector from '@/features/sorting/ui/SortSelector'
+import LoadingSpinner from '@/shared/ui/LoadingSpinner'
 
 const PAGE_SIZE = 10
 
@@ -25,6 +26,7 @@ export default function SearchResultsPanel() {
   const { data, isLoading, isError, refetch, isFetching } = useTrademarksQuery({ country })
   const router = useRouter()
 
+  // 데이터는 이미 fetch 단계에서 전처리됨
   const trademarks = useMemo(() => data ?? [], [data])
 
   const [appliedFilters, setAppliedFilters] = useState(filters)
@@ -34,10 +36,48 @@ export default function SearchResultsPanel() {
 
   const effectiveFilters = autoApply ? filters : appliedFilters
 
-  const filtered = useMemo(() => {
-    if (!trademarks) return []
-    const byFilter = combineFilters(trademarks, effectiveFilters)
-    return sortTrademarks(byFilter, sort)
+  // 대량 데이터 처리 최적화
+  const [filtered, setFiltered] = useState<NormalizedTrademark[]>([])
+  const [isFiltering, setIsFiltering] = useState(false)
+
+  useEffect(() => {
+    if (!trademarks || trademarks.length === 0) {
+      setFiltered([])
+      return
+    }
+
+    // 대량 데이터(1000개 이상)는 비동기 최적화 필터링 사용
+    if (trademarks.length > 1000) {
+      setIsFiltering(true)
+      combineFiltersAsync(trademarks, effectiveFilters, {
+        useOptimized: true,
+        chunkSize: 1000,
+        onProgress: (processed, total) => {
+          // 진행률 로깅 (선택적)
+          if (processed % 5000 === 0 || processed === total) {
+            globalThis.console?.log?.('[FilterProgress]', {
+              processed,
+              total,
+              percentage: ((processed / total) * 100).toFixed(1) + '%',
+            })
+          }
+        },
+      })
+        .then((filtered) => {
+          setFiltered(sortTrademarks(filtered, sort))
+          setIsFiltering(false)
+        })
+        .catch((error) => {
+          globalThis.console?.error?.('[FilterError]', error)
+          // 에러 발생 시 일반 필터링으로 폴백
+          setFiltered(sortTrademarks(combineFilters(trademarks, effectiveFilters), sort))
+          setIsFiltering(false)
+        })
+    } else {
+      // 소량 데이터는 동기 처리
+      const byFilter = combineFilters(trademarks, effectiveFilters)
+      setFiltered(sortTrademarks(byFilter, sort))
+    }
   }, [trademarks, effectiveFilters, sort])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
@@ -75,7 +115,8 @@ export default function SearchResultsPanel() {
     void refetch()
   }
 
-  function renderActiveFilters() {
+  // 필터 칩 메모이제이션 (성능 최적화)
+  const activeChips = useMemo(() => {
     const chips: string[] = []
     if (effectiveFilters.keyword) chips.push(`상표명: ${effectiveFilters.keyword}`)
     if (effectiveFilters.applicationNumber) chips.push(`출원번호: ${effectiveFilters.applicationNumber}`)
@@ -86,9 +127,7 @@ export default function SearchResultsPanel() {
       )
     }
     return chips
-  }
-
-  const activeChips = renderActiveFilters()
+  }, [effectiveFilters])
 
   if (isError) {
     return (
@@ -109,9 +148,10 @@ export default function SearchResultsPanel() {
           <button
             type="button"
             onClick={handleApply}
-            className="rounded-full border border-indigo-400 bg-indigo-500/10 px-4 py-2 text-sm font-medium text-indigo-100 shadow-sm transition hover:bg-indigo-500 hover:text-slate-900 disabled:cursor-not-allowed disabled:border-slate-700 disabled:text-slate-500"
+            className="flex items-center gap-2 rounded-full border border-indigo-400 bg-indigo-500/10 px-4 py-2 text-sm font-medium text-indigo-100 shadow-sm transition hover:bg-indigo-500 hover:text-slate-900 disabled:cursor-not-allowed disabled:border-slate-700 disabled:text-slate-500"
             disabled={isLoading || isFetching || autoApply}
           >
+            {isFetching && <LoadingSpinner size="sm" color="indigo" />}
             {isFetching ? '조회 중...' : '조회'}
           </button>
           <label className="flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/60 px-3 py-1 text-xs text-slate-200 shadow-sm">
@@ -152,8 +192,17 @@ export default function SearchResultsPanel() {
       </div>
 
       {isLoading ? (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-6 text-sm text-slate-300 shadow-inner">
-          불러오는 중...
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-12 shadow-inner">
+          <LoadingSpinner size="lg" color="indigo" text="데이터를 불러오는 중..." />
+        </div>
+      ) : isFetching || isFiltering ? (
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-6 shadow-inner">
+          <div className="flex items-center justify-center gap-3">
+            <LoadingSpinner size="md" color="indigo" />
+            <span className="text-sm text-slate-300">
+              {isFiltering ? '대량 데이터 필터링 중...' : '데이터를 갱신하는 중...'}
+            </span>
+          </div>
         </div>
       ) : filtered.length === 0 ? (
         <p className="rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-6 text-sm text-slate-300 shadow-inner">
