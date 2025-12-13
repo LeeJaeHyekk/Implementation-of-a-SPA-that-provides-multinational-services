@@ -32,7 +32,7 @@ export default function SearchBar() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [rawInput, setRawInput] = useState(keyword)
   const [isProcessing, setIsProcessing] = useState(false)
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const debounceTimerRef = useRef<number | ReturnType<typeof globalThis.setTimeout> | null>(null)
 
   // 국가별로 적절한 정제기 선택
   const sanitizer = useMemo(
@@ -164,7 +164,9 @@ export default function SearchBar() {
       // 기존 타이머 취소 (에러 처리)
       try {
         if (debounceTimerRef.current) {
-          clearTimeout(debounceTimerRef.current)
+          if (typeof globalThis !== 'undefined' && globalThis.clearTimeout) {
+            globalThis.clearTimeout(debounceTimerRef.current)
+          }
           debounceTimerRef.current = null
         }
       } catch (error) {
@@ -175,7 +177,16 @@ export default function SearchBar() {
 
       // Debounce 적용 (에러 처리)
       try {
-        debounceTimerRef.current = setTimeout(() => {
+        const setTimeoutFn =
+          typeof globalThis !== 'undefined' && globalThis.setTimeout
+            ? globalThis.setTimeout
+            : typeof setTimeout !== 'undefined'
+              ? setTimeout
+              : (fn: () => void) => {
+                  fn()
+                  return 0
+                }
+        debounceTimerRef.current = setTimeoutFn(() => {
           try {
             sanitizeAndValidate(inputValue)
           } catch (error) {
@@ -204,7 +215,9 @@ export default function SearchBar() {
   useEffect(() => {
     return () => {
       if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current)
+        if (typeof globalThis !== 'undefined' && globalThis.clearTimeout) {
+          globalThis.clearTimeout(debounceTimerRef.current)
+        }
       }
     }
   }, [])
@@ -215,6 +228,7 @@ export default function SearchBar() {
       setRawInput(keyword)
       setErrorMessage(null)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keyword])
 
   return (

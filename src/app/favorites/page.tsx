@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 
 import TrademarkCard from '@/entities/trademark/ui/TrademarkCard'
 import { NormalizedTrademark } from '@/entities/trademark/model'
+import { isTrademarkArray } from '@/entities/trademark/lib/type-guards'
 import { useFavoritesStore } from '@/features/favorites/model/store'
 import { useTrademarksQuery } from '@/shared/api/useTrademarksQuery'
 
@@ -15,7 +16,16 @@ export default function FavoritesRoute() {
   const router = useRouter()
 
   const items = useMemo(() => {
-    const merged = [...(krData ?? []), ...(usData ?? [])] as NormalizedTrademark[]
+    const merged: NormalizedTrademark[] = []
+    
+    // 타입 가드로 안전하게 필터링
+    if (krData && isTrademarkArray(krData)) {
+      merged.push(...krData)
+    }
+    if (usData && isTrademarkArray(usData)) {
+      merged.push(...usData)
+    }
+    
     return merged.filter((item) => favorites.includes(item.id))
   }, [favorites, krData, usData])
 

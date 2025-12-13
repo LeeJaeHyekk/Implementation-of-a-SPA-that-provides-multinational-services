@@ -3,9 +3,9 @@
  */
 
 import { getCachedNormalized, createKeywordMatcher, createMultiLanguageNormalizer } from '@/features/search/lib'
-import { safeMatch } from './base'
 import type { NormalizedTrademark } from '../../model/types'
 import type { PreprocessedTrademark } from '../preprocessing'
+import { isPreprocessedTrademark } from '../type-guards'
 
 const keywordMatcher = createKeywordMatcher()
 const normalizer = createMultiLanguageNormalizer()
@@ -20,10 +20,9 @@ export function matchKeyword(
   if (!keyword) return true
 
   // 전처리된 데이터가 있으면 인덱스 사용
-  const preprocessed = trademark as PreprocessedTrademark
-  if (preprocessed._searchIndex) {
+  if (isPreprocessedTrademark(trademark) && trademark._searchIndex) {
     const normalizedKeyword = getCachedNormalized(keyword, (k) => k.toLowerCase().trim())
-    return preprocessed._searchIndex.some((index) => index.includes(normalizedKeyword))
+    return trademark._searchIndex.some((index: string) => index.includes(normalizedKeyword))
   }
 
   // 전처리되지 않은 경우 정규화 후 매칭

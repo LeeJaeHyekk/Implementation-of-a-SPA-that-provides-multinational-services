@@ -47,6 +47,16 @@ const config = [
       sourceType: 'module',
       globals: {
         React: 'writable',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        performance: 'readonly',
+        process: 'readonly',
+        NodeJS: 'readonly',
+        document: 'readonly',
+        window: 'readonly',
+        console: 'readonly',
       },
       parserOptions: {
         ecmaFeatures: {

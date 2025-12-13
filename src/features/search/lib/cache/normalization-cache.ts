@@ -98,8 +98,8 @@ export function getNormalizationCache(): NormalizationCache {
   if (!cacheInstance) {
     cacheInstance = new NormalizationCache()
     // 주기적으로 만료된 항목 정리 (5분마다)
-    if (typeof globalThis !== 'undefined') {
-      setInterval(() => {
+    if (typeof globalThis !== 'undefined' && typeof globalThis.setInterval !== 'undefined') {
+      globalThis.setInterval(() => {
         cacheInstance?.cleanup()
       }, 1000 * 60 * 5)
     }

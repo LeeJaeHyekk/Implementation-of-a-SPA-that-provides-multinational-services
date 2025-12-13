@@ -71,7 +71,8 @@ export function safeFilter<T>(
 export function validateInput<T>(
   value: T,
   validator: (value: T) => boolean,
-  errorMessage: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _errorMessage: string,
 ): boolean {
   try {
     return validator(value)

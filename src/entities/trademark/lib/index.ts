@@ -17,3 +17,6 @@ export * from './matchers'
 // 전처리 및 인덱싱
 export * from './preprocessing'
 export * from './indexing'
+
+// 타입 가드
+export * from './type-guards'

@@ -36,7 +36,8 @@ export function normalizeKeyword(keyword: string): string {
  * 
  * @deprecated createMultiLanguageSanitizer().sanitize() 사용을 권장합니다.
  */
-export function sanitizeKeyword(input: string, language?: LanguageCode | 'multi'): string | null {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function sanitizeKeyword(input: string, _language?: LanguageCode | 'multi'): string | null {
   const sanitizer = createMultiLanguageSanitizer()
   return sanitizer.sanitize(input)
 }

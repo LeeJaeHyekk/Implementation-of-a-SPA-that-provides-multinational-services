@@ -13,7 +13,8 @@ export function safeTrim(value: string | null | undefined): string {
   try {
     return value.trim()
   } catch {
-    return String(value)
+    // value는 이미 string 타입이므로 안전하게 변환
+    return typeof value === 'string' ? value : ''
   }
 }
 
@@ -24,7 +25,25 @@ export function safeString(value: unknown): string {
   if (value === null || value === undefined) {
     return ''
   }
+  if (typeof value === 'string') {
+    return value
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value)
+  }
+  if (typeof value === 'symbol') {
+    return value.toString()
+  }
+  if (typeof value === 'function') {
+    return value.toString()
+  }
   try {
+    // 객체나 배열의 경우 JSON.stringify 시도
+    if (typeof value === 'object') {
+      return JSON.stringify(value)
+    }
+    // 위의 모든 타입을 체크했으므로 여기 도달할 수 없지만 타입 안정성을 위해
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
     return String(value)
   } catch {
     return ''

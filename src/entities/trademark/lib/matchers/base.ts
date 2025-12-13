@@ -3,16 +3,13 @@
  * 공통 매칭 로직 모듈화
  */
 
-import { validateArray, validateObject, safeExecute } from '@/shared/utils/error-handler'
+import { validateArray, safeExecute } from '@/shared/utils/error-handler'
 import type { NormalizedTrademark } from '../../model/types'
 import type { PreprocessedTrademark } from '../preprocessing'
+import { validateTrademark } from '../type-guards'
 
-/**
- * 상표 객체 검증
- */
-export function validateTrademark(trademark: unknown): trademark is NormalizedTrademark {
-  return validateObject<NormalizedTrademark>(trademark) && 'id' in trademark && 'productName' in trademark
-}
+// 타입 가드는 type-guards 모듈로 이동
+export { validateTrademark, isPreprocessedTrademark, isTrademarkArray, isPreprocessedTrademarkArray } from '../type-guards'
 
 /**
  * 안전한 매칭 함수 실행
@@ -42,8 +39,14 @@ export function safeMatchFilter<T extends NormalizedTrademark | PreprocessedTrad
 
   const result: T[] = []
   for (const item of items) {
-    if (safeMatch(item, matcher, false)) {
-      result.push(item)
+    // matcher를 직접 호출 (타입 안전성 보장)
+    try {
+      if (matcher(item)) {
+        result.push(item)
+      }
+    } catch {
+      // 에러 발생 시 해당 항목 제외
+      continue
     }
   }
   return result

@@ -3,7 +3,7 @@
  */
 
 import { createSearchError, handleSearchError, logSearchError } from '../errors'
-import type { ValidationResult, ValidatorConfig, ValidationErrorCode } from './types'
+import type { ValidationResult, ValidatorConfig } from './types'
 
 /**
  * 기본 검증 설정

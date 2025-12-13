@@ -5,6 +5,7 @@
 
 import type { NormalizedTrademark, RegisterStatus } from '../model/types'
 import type { PreprocessedTrademark } from './preprocessing'
+import { isPreprocessedTrademark } from './type-guards'
 
 /**
  * 검색 인덱스 구조
@@ -47,9 +48,8 @@ export function buildTrademarkIndex(trademarks: (NormalizedTrademark | Preproces
     allIds.add(id)
 
     // 키워드 인덱스 (전처리된 데이터 사용)
-    const preprocessed = trademark as PreprocessedTrademark
-    if (preprocessed._searchIndex) {
-      for (const keyword of preprocessed._searchIndex) {
+    if (isPreprocessedTrademark(trademark) && trademark._searchIndex) {
+      for (const keyword of trademark._searchIndex) {
         if (!keywordIndex.has(keyword)) {
           keywordIndex.set(keyword, new Set())
         }
@@ -78,13 +78,26 @@ export function buildTrademarkIndex(trademarks: (NormalizedTrademark | Preproces
     statusIndex.get(trademark.registerStatus)!.add(id)
 
     // 날짜 인덱스 (년도별)
-    const preprocessedDate = preprocessed._applicationTimestamp
-    if (preprocessedDate) {
-      const year = new Date(preprocessedDate).getFullYear()
+    if (isPreprocessedTrademark(trademark) && trademark._applicationTimestamp) {
+      const year = new Date(trademark._applicationTimestamp).getFullYear()
       if (!dateIndex.has(year)) {
         dateIndex.set(year, new Set())
       }
       dateIndex.get(year)!.add(id)
+    } else if (trademark.applicationDate) {
+      // 전처리되지 않은 경우 날짜 파싱
+      try {
+        const timestamp = Date.parse(trademark.applicationDate)
+        if (!Number.isNaN(timestamp)) {
+          const year = new Date(timestamp).getFullYear()
+          if (!dateIndex.has(year)) {
+            dateIndex.set(year, new Set())
+          }
+          dateIndex.get(year)!.add(id)
+        }
+      } catch {
+        // 날짜 파싱 실패 시 무시
+      }
     }
   }
 

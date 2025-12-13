@@ -2,7 +2,7 @@
  * 검색어 정제 구현
  */
 
-import { createSearchError, handleSearchError, logSearchError } from '../errors'
+import { handleSearchError, logSearchError } from '../errors'
 import { createMultiLanguageProfanityFilter, createProfanityFilter } from '../profanity'
 import type { LanguageCode } from '../profanity/types'
 import { createMultiLanguageNormalizer, createNormalizer } from '../normalizers'
@@ -32,7 +32,7 @@ class KeywordSanitizer implements Sanitizer {
       config.customProfanityFilter ??
       (language === 'multi'
         ? createMultiLanguageProfanityFilter()
-        : createProfanityFilter(language as LanguageCode))
+        : createProfanityFilter(language))
 
     this.allowSpecialCharacters = config.allowSpecialCharacters ?? false
     this.validationConfig = config.validation

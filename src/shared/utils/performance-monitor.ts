@@ -18,12 +18,17 @@ class PerformanceMonitor {
   /**
    * 성능 측정 시작
    */
-  startMeasure(operation: string): () => void {
-    const startTime = performance.now()
-    const startItemCount = 0
+  startMeasure(operation: string): (itemCount?: number) => void {
+    const startTime =
+      typeof globalThis !== 'undefined' && globalThis.performance
+        ? globalThis.performance.now()
+        : Date.now()
 
     return (itemCount = 0) => {
-      const endTime = performance.now()
+      const endTime =
+        typeof globalThis !== 'undefined' && globalThis.performance
+          ? globalThis.performance.now()
+          : Date.now()
       const duration = endTime - startTime
       const itemsPerSecond = itemCount > 0 && duration > 0 ? (itemCount / duration) * 1000 : 0
 
@@ -49,7 +54,12 @@ class PerformanceMonitor {
     }
 
     // 개발 환경에서만 로깅
-    if (typeof globalThis !== 'undefined' && globalThis.console && process.env.NODE_ENV === 'development') {
+    if (
+      typeof globalThis !== 'undefined' &&
+      globalThis.console &&
+      typeof globalThis.process !== 'undefined' &&
+      globalThis.process.env?.NODE_ENV === 'development'
+    ) {
       globalThis.console.log(`[Performance] ${metric.operation}:`, {
         duration: `${metric.duration.toFixed(2)}ms`,
         items: metric.itemCount,
@@ -125,10 +135,18 @@ export async function measurePerformance<T>(
 
   try {
     const result = await fn()
-    endMeasure(itemCount)
+    if (itemCount !== undefined) {
+      endMeasure(itemCount)
+    } else {
+      endMeasure()
+    }
     return result
   } catch (error) {
-    endMeasure(itemCount)
+    if (itemCount !== undefined) {
+      endMeasure(itemCount)
+    } else {
+      endMeasure()
+    }
     throw error
   }
 }

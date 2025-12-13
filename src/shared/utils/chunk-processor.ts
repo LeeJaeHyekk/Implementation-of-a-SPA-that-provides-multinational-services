@@ -31,7 +31,13 @@ export async function processInChunks<T, R>(
     }
 
     // 다음 이벤트 루프로 양보 (메인 스레드 블로킹 방지)
-    await new Promise((resolve) => setTimeout(resolve, 0))
+    await new Promise((resolve) => {
+      if (typeof globalThis !== 'undefined' && globalThis.setTimeout) {
+        globalThis.setTimeout(resolve, 0)
+      } else {
+        resolve(undefined)
+      }
+    })
   }
 
   return results
@@ -58,7 +64,13 @@ export async function filterInChunks<T>(
       onProgress(Math.min(i + chunkSize, total), total)
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 0))
+    await new Promise((resolve) => {
+      if (typeof globalThis !== 'undefined' && globalThis.setTimeout) {
+        globalThis.setTimeout(resolve, 0)
+      } else {
+        resolve(undefined)
+      }
+    })
   }
 
   return results
