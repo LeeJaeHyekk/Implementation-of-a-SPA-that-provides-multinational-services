@@ -61,6 +61,25 @@ export const TEXT_CLASSES = {
   error: 'text-xs sm:text-sm font-medium text-red-200',
   empty: 'text-xs sm:text-sm font-medium text-slate-300',
   loading: 'text-xs sm:text-sm font-medium text-slate-300 drop-shadow-sm',
-  label: 'text-xs sm:text-sm font-medium text-slate-200 drop-shadow-sm',
+  label: 'text-xs sm:text-sm font-medium text-slate-200 drop-shadow-sm md:text-base',
+} as const
+
+/**
+ * 입력 필드 클래스
+ */
+export const INPUT_CLASSES = {
+  base: 'glass-input h-[42px] w-full rounded-lg px-3 text-xs sm:text-sm text-slate-100 md:px-4 md:text-base',
+  select: 'glass-select h-[42px] w-full rounded-lg px-3 text-xs sm:text-sm text-slate-100 md:px-4 md:text-base',
+  error: 'glass-input-error',
+} as const
+
+/**
+ * 에러 메시지 영역 클래스
+ */
+export const ERROR_MESSAGE_CLASSES = {
+  container: 'mt-1 min-h-[1.25rem]',
+  message: 'text-xs font-medium drop-shadow-sm transition-opacity sm:text-sm',
+  visible: 'text-red-300 opacity-100',
+  hidden: 'text-transparent opacity-0 pointer-events-none',
 } as const
 

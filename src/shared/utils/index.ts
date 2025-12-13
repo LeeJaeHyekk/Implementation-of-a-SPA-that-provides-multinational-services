@@ -9,4 +9,5 @@ export * from './type-guards'
 export * from './navigation'
 export * from './chunk-processor'
 export * from './performance-monitor'
+export * from './storage'
 

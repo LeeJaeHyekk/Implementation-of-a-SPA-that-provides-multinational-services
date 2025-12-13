@@ -20,6 +20,7 @@ import { GRID_CLASSES } from '@/shared/config/css-classes'
 import { SEARCH_CONSTANTS } from '@/shared/config/constants'
 import { usePagination } from '@/shared/hooks'
 import FilterChips from '@/features/search/ui/FilterChips'
+import { safeExecute } from '@/shared/utils/error-handler'
 
 export default function SearchResultsPanel() {
   const country = useCountryStore((state) => state.country)
@@ -111,7 +112,17 @@ export default function SearchResultsPanel() {
   }, [country, trademarks, effectiveFilters, filters, isFetching, isLoading])
 
   function handleSelect(id: string) {
-    navigateToTrademarkDetail(router, id)
+    safeExecute(
+      () => {
+        if (!id || typeof id !== 'string' || id.trim().length === 0) {
+          globalThis.console?.warn?.('[SearchResultsPanel] Invalid ID for selection', { id })
+          return
+        }
+        navigateToTrademarkDetail(router, id)
+      },
+      undefined,
+      { id, action: 'selectTrademark' },
+    )
   }
 
   if (isError) {
@@ -165,7 +176,13 @@ export default function SearchResultsPanel() {
             <div className="flex items-center gap-2 sm:gap-3">
               <button
                 type="button"
-                onClick={goToPrevPage}
+                onClick={() => {
+                  safeExecute(
+                    () => goToPrevPage(),
+                    undefined,
+                    { action: 'goToPrevPage', currentPage },
+                  )
+                }}
                 disabled={!hasPrevPage}
                 className="glass-button rounded-lg px-2.5 py-1 text-xs sm:px-3 sm:py-1 sm:text-sm font-medium text-slate-200 transition disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:transform-none"
               >
@@ -173,7 +190,13 @@ export default function SearchResultsPanel() {
               </button>
               <button
                 type="button"
-                onClick={goToNextPage}
+                onClick={() => {
+                  safeExecute(
+                    () => goToNextPage(),
+                    undefined,
+                    { action: 'goToNextPage', currentPage },
+                  )
+                }}
                 disabled={!hasNextPage}
                 className="glass-button rounded-lg px-2.5 py-1 text-xs sm:px-3 sm:py-1 sm:text-sm font-medium text-slate-200 transition disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:transform-none"
               >
@@ -206,6 +229,7 @@ export default function SearchResultsPanel() {
 }
 
 import { formatDateToDot, formatDateArray } from '@/shared/utils/date-utils'
+import { getTrademarkStatusLabel } from '@/entities/trademark/lib/getStatusLabel'
 
 interface DetailModalProps {
   trademark: NormalizedTrademark
@@ -214,26 +238,46 @@ interface DetailModalProps {
 }
 
 function DetailModal({ trademark, onClose, onBack }: DetailModalProps) {
+  // trademark 유효성 검증
+  if (!trademark || typeof trademark !== 'object' || !trademark.id) {
+    globalThis.console?.warn?.('[DetailModal] Invalid trademark prop', { trademark })
+    return null
+  }
+
   // Escape 키로 모달 닫기
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        onClose()
+      try {
+        if (event.key === 'Escape') {
+          onClose()
+        }
+      } catch (error) {
+        globalThis.console?.error?.('[DetailModal] Error handling keydown', { error })
       }
     }
 
-    window.addEventListener('keydown', handleKeyDown)
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
+    try {
+      window.addEventListener('keydown', handleKeyDown)
+      return () => {
+        try {
+          window.removeEventListener('keydown', handleKeyDown)
+        } catch (error) {
+          globalThis.console?.error?.('[DetailModal] Error removing keydown listener', { error })
+        }
+      }
+    } catch (error) {
+      globalThis.console?.error?.('[DetailModal] Error adding keydown listener', { error })
+      return () => {}
     }
   }, [onClose])
 
   const isKR = trademark.country === 'KR'
+  const statusLabel = getTrademarkStatusLabel(trademark)
   const fields: Array<[string, string | string[] | null | undefined]> = isKR
     ? [
         ['출원번호', trademark.applicationNumber],
         ['출원일', trademark.applicationDate],
-        ['등록 상태', trademark.registerStatus],
+        ['등록 상태', statusLabel],
         ['공고번호', trademark.publicationNumber],
         ['공고일', trademark.publicationDate],
         ['등록번호', trademark.registrationNumber],
@@ -251,7 +295,7 @@ function DetailModal({ trademark, onClose, onBack }: DetailModalProps) {
     : [
         ['출원번호', trademark.applicationNumber],
         ['출원일', trademark.applicationDate],
-        ['등록 상태', trademark.registerStatus],
+        ['등록 상태', statusLabel],
         ['공고일', trademark.publicationDate],
         ['등록번호', trademark.registrationNumber],
         ['등록일', trademark.registrationDate],
@@ -266,8 +310,8 @@ function DetailModal({ trademark, onClose, onBack }: DetailModalProps) {
 
   const renderField = (label: string, value: string | string[] | null | undefined) => {
     const display = Array.isArray(value)
-      ? formatDateArray(value)
-      : formatDateToDot(value ?? null)
+      ? formatDateArray(value, trademark.country)
+      : formatDateToDot(value ?? null, trademark.country)
 
     return (
       <div
@@ -275,7 +319,9 @@ function DetailModal({ trademark, onClose, onBack }: DetailModalProps) {
         className="glass-card flex flex-col gap-0.5 sm:gap-1 rounded-lg px-2.5 py-1.5 sm:rounded-xl sm:px-3 sm:py-2"
       >
         <p className="text-xs text-slate-400">{label}</p>
-        <p className="text-xs sm:text-sm font-medium text-slate-50 break-words">{display === '-' ? '-' : display}</p>
+        <p className="text-xs sm:text-sm font-medium text-slate-50 break-words">
+          {display === '-' || display === 'Unknown' ? (trademark.country === 'US' ? 'Unknown' : '-') : display}
+        </p>
       </div>
     )
   }
@@ -298,11 +344,17 @@ function DetailModal({ trademark, onClose, onBack }: DetailModalProps) {
           </div>
           <div className="flex items-center gap-2 sm:flex-shrink-0">
             <span className="glass-badge rounded-lg px-2 py-0.5 text-xs font-semibold text-indigo-200 sm:px-3 sm:py-1">
-              {trademark.registerStatus}
+              {statusLabel}
             </span>
             <button
               type="button"
-              onClick={onClose}
+              onClick={() => {
+                safeExecute(
+                  () => onClose(),
+                  undefined,
+                  { action: 'closeModal' },
+                )
+              }}
               className="glass-button rounded-lg px-2.5 py-1 text-xs font-medium text-slate-200 transition hover:text-indigo-200 sm:px-3 sm:py-1"
               aria-label="모달 닫기"
             >
@@ -316,7 +368,13 @@ function DetailModal({ trademark, onClose, onBack }: DetailModalProps) {
         <div className="mt-4 flex justify-end gap-2 sm:mt-6">
           <button
             type="button"
-            onClick={onBack}
+            onClick={() => {
+              safeExecute(
+                () => onBack(),
+                undefined,
+                { action: 'backModal' },
+              )
+            }}
             className="glass-button glass-button-primary rounded-lg px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm font-medium text-indigo-200 transition"
           >
             닫기

@@ -25,10 +25,20 @@ export default function FilterFieldWrapper({
   return (
     <div className="w-full">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-slate-200 drop-shadow-sm">{label}</label>
+        <label className="text-xs sm:text-sm font-medium text-slate-200 drop-shadow-sm md:text-base">{label}</label>
         {hasValue && <ClearButton onClick={onClear} ariaLabel={clearAriaLabel} />}
       </div>
       <div className="mt-1">{children}</div>
+      {/* 에러 메시지 영역 - 항상 렌더링하여 레이아웃 시프트 방지 (상표명 검색과 동일한 높이) */}
+      <div className="mt-1 min-h-[1.25rem]">
+        <p
+          className="text-xs font-medium drop-shadow-sm transition-opacity sm:text-sm text-transparent opacity-0 pointer-events-none"
+          role="alert"
+          aria-live="polite"
+        >
+          {'\u00A0'}
+        </p>
+      </div>
     </div>
   )
 }

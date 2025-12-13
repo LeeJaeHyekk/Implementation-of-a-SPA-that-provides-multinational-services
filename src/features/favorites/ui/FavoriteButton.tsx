@@ -1,19 +1,34 @@
 'use client'
 
 import { useFavoritesStore } from '../model/store'
+import { safeExecute } from '@/shared/utils/error-handler'
 
 interface FavoriteButtonProps {
   trademarkId: string
 }
 
 export default function FavoriteButton({ trademarkId }: FavoriteButtonProps) {
+  // ID 유효성 검증
+  if (!trademarkId || typeof trademarkId !== 'string' || trademarkId.trim().length === 0) {
+    globalThis.console?.warn?.('[FavoriteButton] Invalid trademark ID', { trademarkId })
+    return null
+  }
+
   const isFavorite = useFavoritesStore((state) => state.isFavorite(trademarkId))
   const toggle = useFavoritesStore((state) => state.toggle)
+
+  const handleToggle = () => {
+    safeExecute(
+      () => toggle(trademarkId),
+      undefined,
+      { trademarkId, action: 'toggleFavorite' },
+    )
+  }
 
   return (
     <button
       type="button"
-      onClick={() => toggle(trademarkId)}
+      onClick={handleToggle}
       className={`glass-button flex items-center justify-center rounded-lg px-1.5 py-0.5 sm:px-2 sm:py-1 transition ${
         isFavorite
           ? 'glass-button-primary text-indigo-200'

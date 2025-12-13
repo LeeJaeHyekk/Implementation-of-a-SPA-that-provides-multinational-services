@@ -309,10 +309,14 @@ src/
 - **EmptyState**: 빈 상태 표시 컴포넌트
 - **ErrorState**: 에러 상태 표시 컴포넌트
 - **AnimatedBackground**: 애니메이션 배경
+- **ErrorMessage**: 에러 메시지 표시 컴포넌트 (레이아웃 시프트 방지)
+- **SearchInput**: 검색 입력 필드 컴포넌트 (로딩, 에러 처리 포함)
+- **ActionButton**: 공통 액션 버튼 컴포넌트 (CompareButton, FavoriteButton 등에서 사용)
 
 ### 공통 Hooks (`shared/hooks`)
 - **useSanitizer**: 국가별 Sanitizer 생성 훅 (중복 제거)
 - **usePagination**: 페이지네이션 로직 관리 훅 (재사용 가능)
+- **useSearchValidation**: 검색어 검증 및 정제 로직 훅 (SearchBar, SearchBarWithFilters 중복 제거)
 
 ### 공통 유틸리티 (`shared/utils`)
 - **navigation**: 라우터 네비게이션 함수 (중앙화)
@@ -452,6 +456,26 @@ src/
 - **클라이언트 컴포넌트**: `useRouter`, `useState` 등 React 훅을 사용하는 컴포넌트는 `'use client'` 지시어가 필요합니다.
 
 ## 📝 최근 업데이트
+
+### 파일 구조 최적화 및 모듈화 (v0.2.0)
+- ✅ 공통 localStorage 스토어 유틸리티: `shared/utils/storage.ts`로 중복 코드 제거
+- ✅ 모든 features에 index.ts 추가: 통합 export로 import 경로 단순화
+- ✅ entities, processes, shared 모듈에 index.ts 추가
+- ✅ 모듈 export 통합: 계층적 export 구조로 개선
+- ✅ 타입 안전성 강화: 타입 가드 및 상태 검증 추가
+
+### 국가별 데이터 비교 기능 (v0.1.1)
+- ✅ 비교 상태 관리 Store (Zustand + localStorage)
+- ✅ CompareButton, ComparisonPanel, ComparisonTable 컴포넌트
+- ✅ 비교 페이지 (`/compare`) 구현
+- ✅ 타입 가드 및 상태 검증 추가
+
+### 중복 코드 모듈화 (v0.3.0)
+- ✅ 에러 메시지 표시 컴포넌트: `ErrorMessage` 컴포넌트로 레이아웃 시프트 방지 패턴 통합
+- ✅ 검증 및 정제 로직 훅: `useSearchValidation` 훅으로 SearchBar, SearchBarWithFilters 중복 제거
+- ✅ 검색 입력 필드 컴포넌트: `SearchInput` 컴포넌트로 입력 필드 패턴 통합
+- ✅ 액션 버튼 컴포넌트: `ActionButton` 컴포넌트로 CompareButton, FavoriteButton 패턴 통합
+- ✅ CSS 클래스 상수 확장: `INPUT_CLASSES`, `ERROR_MESSAGE_CLASSES` 추가
 
 ### 모듈화 개선 (v0.1.0)
 - ✅ 공통 훅 추출: `useSanitizer`, `usePagination`

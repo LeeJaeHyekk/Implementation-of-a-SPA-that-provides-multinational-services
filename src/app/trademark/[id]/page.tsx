@@ -4,6 +4,7 @@ import { useMemo, use, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 import FavoriteButton from '@/features/favorites/ui/FavoriteButton'
+import CompareButton from '@/features/comparison/ui/CompareButton'
 import TrademarkDetail from '@/entities/trademark/ui/TrademarkDetail'
 import { TrademarkCountry } from '@/entities/trademark/model'
 import { resolveCountry } from '@/entities/trademark/lib/resolve-country'
@@ -13,6 +14,7 @@ import BackButton from '@/shared/ui/BackButton'
 import NavigateButton from '@/shared/ui/NavigateButton'
 import { navigateToSearch } from '@/shared/utils/navigation'
 import { LAYOUT_CLASSES } from '@/shared/config/css-classes'
+import { safeExecute } from '@/shared/utils/error-handler'
 
 interface TrademarkDetailRouteProps {
   params: Promise<{
@@ -57,7 +59,13 @@ export default function TrademarkDetailRoute({ params }: TrademarkDetailRoutePro
       errorMessage="데이터를 불러오는 중 오류가 발생했습니다."
       emptyMessage="해당 상표를 찾을 수 없습니다."
       loadingMessage="불러오는 중..."
-      onErrorAction={() => navigateToSearch(router)}
+      onErrorAction={() => {
+        safeExecute(
+          () => navigateToSearch(router),
+          undefined,
+          { action: 'navigateToSearchFromDetail' },
+        )
+      }}
       errorActionLabel="검색으로 돌아가기"
     >
       {trademark ? (
@@ -66,7 +74,10 @@ export default function TrademarkDetailRoute({ params }: TrademarkDetailRoutePro
             <div className={`${LAYOUT_CLASSES.centeredContent} ${LAYOUT_CLASSES.spaceY}`}>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <BackButton />
-                <FavoriteButton trademarkId={trademark.id} />
+                <div className="flex items-center gap-2">
+                  <CompareButton trademarkId={trademark.id} />
+                  <FavoriteButton trademarkId={trademark.id} />
+                </div>
               </div>
               <TrademarkDetail trademark={trademark} />
             </div>

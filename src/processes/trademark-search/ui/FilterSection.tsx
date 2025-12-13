@@ -7,6 +7,8 @@ import ApplicationNumberFilter from '@/features/search/ui/ApplicationNumberFilte
 import StatusFilter from '@/features/search/ui/StatusFilter'
 import DateRangeFilter from '@/features/search/ui/DateRangeFilter'
 import { GRID_CLASSES } from '@/shared/config/css-classes'
+import { safeExecute } from '@/shared/utils/error-handler'
+
 interface FilterSectionProps {
   isOpen: boolean
 }
@@ -18,7 +20,11 @@ export default function FilterSection({ isOpen }: FilterSectionProps) {
   if (!isOpen) return null
 
   function handleResetFilters() {
-    resetFilters()
+    safeExecute(
+      () => resetFilters(),
+      undefined,
+      { action: 'resetFilters' },
+    )
   }
 
   return (

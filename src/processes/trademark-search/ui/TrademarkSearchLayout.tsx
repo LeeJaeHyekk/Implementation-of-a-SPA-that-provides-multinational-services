@@ -4,6 +4,7 @@ import { useSearchStore } from '@/features/search/model/store'
 import { useHasActiveFilters } from '@/features/search/model/selectors'
 import SearchBarWithFilters from './SearchBarWithFilters'
 import SearchResultsPanel from './SearchResultsPanel'
+import ComparisonPanel from '@/features/comparison/ui/ComparisonPanel'
 
 export default function TrademarkSearchLayout() {
   const hasSearched = useSearchStore((state) => state.hasSearched)
@@ -55,6 +56,9 @@ export default function TrademarkSearchLayout() {
           <SearchResultsPanel />
         </div>
       )}
+
+      {/* 비교 패널 - 플로팅 */}
+      <ComparisonPanel />
     </div>
   )
 }

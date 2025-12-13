@@ -14,6 +14,7 @@ import ErrorState from '@/shared/ui/ErrorState'
 import EmptyState from '@/shared/ui/EmptyState'
 import LoadingSpinner from '@/shared/ui/LoadingSpinner'
 import { LAYOUT_CLASSES, GRID_CLASSES } from '@/shared/config/css-classes'
+import { safeExecute } from '@/shared/utils/error-handler'
 
 export default function FavoritesRoute() {
   const favorites = useFavoritesStore((state) => state.favorites)
@@ -46,7 +47,17 @@ export default function FavoritesRoute() {
   const isError = isErrorKr || isErrorUs
 
   function handleSelect(id: string) {
-    navigateToTrademarkDetail(router, id)
+    safeExecute(
+      () => {
+        if (!id || typeof id !== 'string' || id.trim().length === 0) {
+          globalThis.console?.warn?.('[FavoritesRoute] Invalid ID for selection', { id })
+          return
+        }
+        navigateToTrademarkDetail(router, id)
+      },
+      undefined,
+      { id, action: 'selectTrademark' },
+    )
   }
 
   return (

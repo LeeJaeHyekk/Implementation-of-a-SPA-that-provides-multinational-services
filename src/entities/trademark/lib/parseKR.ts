@@ -19,6 +19,7 @@ function resolveNames(productName?: string | null, productNameEng?: string | nul
   const kr = normalizeString(productName)
   const en = normalizeString(productNameEng)
 
+  // 한국 데이터이므로 항상 '미상' 사용
   return {
     productName: kr ?? en ?? '미상',
     productNameEng: en ?? undefined,

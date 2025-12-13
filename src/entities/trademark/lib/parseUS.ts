@@ -15,7 +15,7 @@ export function parseUS(raw: USTrademarkRaw): NormalizedTrademark {
   return {
     id: `US-${raw.applicationNumber}`,
     country: 'US',
-    productName: normalizeRequiredString(raw.productName),
+    productName: normalizeRequiredString(raw.productName, 'Unknown'),
     applicationNumber: raw.applicationNumber,
     applicationDate: raw.applicationDate ?? null,
     registerStatus: normalizeStatus(raw.registerStatus),

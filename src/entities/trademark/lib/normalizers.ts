@@ -25,12 +25,14 @@ export function normalizeString(value?: string | null): string | null {
 
 /**
  * 필수 문자열을 안전하게 정규화
- * null/undefined/빈 문자열을 '미상'으로
+ * null/undefined/빈 문자열을 기본값으로
+ * @param value - 정규화할 값
+ * @param defaultValue - 기본값 (기본: '미상')
  */
-export function normalizeRequiredString(value?: string | null): string {
-  if (value === null || value === undefined) return '미상'
-  if (typeof value !== 'string') return '미상'
+export function normalizeRequiredString(value?: string | null, defaultValue: string = '미상'): string {
+  if (value === null || value === undefined) return defaultValue
+  if (typeof value !== 'string') return defaultValue
   const trimmed = value.trim()
-  return trimmed.length > 0 ? trimmed : '미상'
+  return trimmed.length > 0 ? trimmed : defaultValue
 }
 

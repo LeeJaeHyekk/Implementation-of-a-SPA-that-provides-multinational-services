@@ -3,6 +3,8 @@
  * 중복되는 날짜 파싱 로직 통합
  */
 
+import { TrademarkCountry } from '@/entities/trademark/model'
+
 /**
  * 날짜 문자열을 타임스탬프로 변환
  */
@@ -58,10 +60,15 @@ export function extractYear(timestamp: number | null): number | null {
 /**
  * 날짜 문자열을 yyyy.mm.dd 형식으로 포맷
  * @param value - 날짜 문자열 (YYYYMMDD 또는 YYYY-MM-DD 형식)
+ * @param country - 국가 코드 (기본값 표시용)
  * @returns 포맷된 날짜 문자열 (yyyy.mm.dd) 또는 원본 값
  */
-export function formatDateToDot(value?: string | null): string {
-  if (!value) return '-'
+export function formatDateToDot(value?: string | null, country?: TrademarkCountry): string {
+  if (!value) {
+    // 국가별 기본값 반환
+    if (country === 'US') return 'Unknown'
+    return '-'
+  }
   
   try {
     // 하이픈 제거
@@ -84,9 +91,16 @@ export function formatDateToDot(value?: string | null): string {
 
 /**
  * 날짜 배열을 yyyy.mm.dd 형식으로 포맷하여 쉼표로 구분
+ * @param values - 날짜 문자열 배열
+ * @param country - 국가 코드 (기본값 표시용)
+ * @returns 포맷된 날짜 문자열 (쉼표로 구분) 또는 기본값
  */
-export function formatDateArray(values: string[]): string {
-  if (!values || values.length === 0) return '-'
-  return values.map(formatDateToDot).join(', ')
+export function formatDateArray(values: string[], country?: TrademarkCountry): string {
+  if (!values || values.length === 0) {
+    // 국가별 기본값 반환
+    if (country === 'US') return 'Unknown'
+    return '-'
+  }
+  return values.map((value) => formatDateToDot(value, country)).join(', ')
 }
 

@@ -185,7 +185,7 @@ export default function SearchBarWithFilters() {
         }`}
       >
         {/* 검색 영역 */}
-        <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-end">
+        <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-start">
           {/* 검색 입력란 */}
           <div className="flex-1">
             <label className="text-xs sm:text-sm font-medium text-slate-200 drop-shadow-sm md:text-base">
@@ -215,15 +215,24 @@ export default function SearchBarWithFilters() {
                 </div>
               )}
             </div>
-            {errorMessage && (
-              <p className="mt-1 text-xs font-medium text-red-300 drop-shadow-sm sm:text-sm" role="alert">
-                {errorMessage}
+            {/* 에러 메시지 영역 - 항상 렌더링하여 레이아웃 시프트 방지 */}
+            <div className="mt-1 min-h-[1.25rem]">
+              <p
+                className={`text-xs font-medium drop-shadow-sm transition-opacity sm:text-sm ${
+                  errorMessage
+                    ? 'text-red-300 opacity-100'
+                    : 'text-transparent opacity-0 pointer-events-none'
+                }`}
+                role="alert"
+                aria-live="polite"
+              >
+                {errorMessage || '\u00A0'}
               </p>
-            )}
+            </div>
           </div>
 
           {/* 필터 아이콘 버튼 */}
-          <div className="w-full sm:w-auto">
+          <div className="w-full sm:w-auto sm:pt-[1.5rem] md:pt-[1.75rem]">
             <button
               type="button"
               onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -256,7 +265,7 @@ export default function SearchBarWithFilters() {
           </div>
 
           {/* 검색 버튼 */}
-          <div className="w-full sm:w-auto">
+          <div className="w-full sm:w-auto sm:pt-[1.5rem] md:pt-[1.75rem]">
             <button
               type="submit"
               disabled={isProcessing}

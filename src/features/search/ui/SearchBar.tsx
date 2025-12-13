@@ -223,11 +223,20 @@ export default function SearchBar() {
           </div>
         )}
       </div>
-      {errorMessage && (
-        <p className="mt-1 text-xs font-medium text-red-300 drop-shadow-sm" role="alert">
-          {errorMessage}
+      {/* 에러 메시지 영역 - 항상 렌더링하여 레이아웃 시프트 방지 */}
+      <div className="mt-1 min-h-[1.25rem]">
+        <p
+          className={`text-xs font-medium drop-shadow-sm transition-opacity ${
+            errorMessage
+              ? 'text-red-300 opacity-100'
+              : 'text-transparent opacity-0 pointer-events-none'
+          }`}
+          role="alert"
+          aria-live="polite"
+        >
+          {errorMessage || '\u00A0'}
         </p>
-      )}
+      </div>
     </div>
   )
 }
