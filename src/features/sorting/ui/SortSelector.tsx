@@ -14,11 +14,11 @@ export default function SortSelector() {
 
   return (
     <div className="w-full">
-      <label className="text-sm font-medium text-slate-200 drop-shadow-sm">정렬</label>
+      <label className="text-xs sm:text-sm font-medium text-slate-200 drop-shadow-sm">정렬</label>
       <select
         value={sort}
         onChange={(event) => setSort(event.target.value as typeof sort)}
-        className="glass-select mt-1 w-full rounded-lg px-3 py-2 text-sm text-slate-100"
+        className="glass-select mt-1 h-[42px] w-full rounded-lg px-3 py-2 text-xs sm:text-sm text-slate-100"
       >
         {OPTIONS.map((option) => (
           <option key={option.value} value={option.value}>

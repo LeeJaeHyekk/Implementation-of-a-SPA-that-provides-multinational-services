@@ -1,7 +1,5 @@
-import { normalizeTrademarks, preprocessTrademarks } from '@/entities/trademark/lib'
 import { isUSTrademarkRawArray } from '@/entities/trademark/model'
-
-import { loadLocalJson } from './loadLocalJson'
+import { fetchTrademarksBase } from './fetchTrademarksBase'
 import usSample from '../../data/trademarks_us_sample.json' with { type: 'json' }
 import usFull from '../../data/trademarks_us_trademarks.json' with { type: 'json' }
 
@@ -11,24 +9,12 @@ const US_DATA_LOADERS = [
 ] satisfies ReadonlyArray<() => Promise<{ default: unknown }>>
 
 export async function fetchUSTrademarks() {
-  const rawData = await loadLocalJson<unknown>({
+  return fetchTrademarksBase({
+    country: 'US',
     loaders: US_DATA_LOADERS,
     errorMessage: '미국 상표 데이터 파일을 찾을 수 없습니다. src/data 경로를 확인하세요.',
+    typeGuard: isUSTrademarkRawArray,
+    typeGuardError: '미국 상표 데이터 형식이 올바르지 않습니다.',
   })
-
-  // 타입 가드로 런타임 검증
-  if (!isUSTrademarkRawArray(rawData)) {
-    throw new Error('미국 상표 데이터 형식이 올바르지 않습니다.')
-  }
-
-  // 타입 가드를 통과했으므로 타입이 이미 좁혀짐
-  const data = rawData
-
-  const normalized = normalizeTrademarks({ country: 'US', items: data })
-  
-  // 검색 성능 향상을 위한 전처리
-  const preprocessed = preprocessTrademarks(normalized)
-  
-  return preprocessed
 }
 

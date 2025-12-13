@@ -5,6 +5,9 @@
 
 import { ReactNode } from 'react'
 import LoadingSpinner from './LoadingSpinner'
+import ErrorState from './ErrorState'
+import EmptyState from './EmptyState'
+import { LAYOUT_CLASSES } from '../config/css-classes'
 
 interface QueryStateHandlerProps {
   isLoading: boolean
@@ -31,20 +34,22 @@ export default function QueryStateHandler({
 }: QueryStateHandlerProps) {
   if (isError) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4 py-6">
-        <div className="w-full max-w-4xl">
-          <div className="glass-card rounded-2xl border-red-500/40 bg-red-950/30 p-6 text-center">
-            <p className="text-sm font-medium text-red-200">{errorMessage}</p>
-            {onErrorAction && (
-              <button
-                type="button"
-                onClick={onErrorAction}
-                className="glass-button mt-4 rounded-lg px-4 py-2 text-sm font-medium text-slate-200 transition hover:text-indigo-200"
-              >
-                {errorActionLabel}
-              </button>
-            )}
-          </div>
+      <div className={LAYOUT_CLASSES.centered}>
+        <div className={LAYOUT_CLASSES.centeredContent}>
+          <ErrorState
+            message={errorMessage}
+            action={
+              onErrorAction ? (
+                <button
+                  type="button"
+                  onClick={onErrorAction}
+                  className="glass-button mt-4 rounded-lg px-4 py-2 text-sm font-medium text-slate-200 transition hover:text-indigo-200"
+                >
+                  {errorActionLabel}
+                </button>
+              ) : undefined
+            }
+          />
         </div>
       </div>
     )
@@ -52,23 +57,15 @@ export default function QueryStateHandler({
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4 py-6">
-        <div className="w-full max-w-4xl">
-          <div className="glass-card rounded-2xl p-6 text-center">
-            <LoadingSpinner size="lg" color="indigo" text={loadingMessage} />
-          </div>
-        </div>
-      </div>
+      <LoadingSpinner size="lg" color="indigo" text={loadingMessage} fullScreen />
     )
   }
 
   if (isEmpty) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4 py-6">
-        <div className="w-full max-w-4xl">
-          <div className="glass-card rounded-2xl p-6 text-center">
-            <p className="text-sm font-medium text-slate-300">{emptyMessage}</p>
-          </div>
+      <div className={LAYOUT_CLASSES.centered}>
+        <div className={LAYOUT_CLASSES.centeredContent}>
+          <EmptyState message={emptyMessage} />
         </div>
       </div>
     )

@@ -28,7 +28,7 @@ export default function DateRangeFilter() {
       onClear={handleClear}
       clearAriaLabel="출원일 범위 필터 삭제"
     >
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
         <input
           type="date"
           value={dateRange?.from ?? ''}

@@ -16,7 +16,7 @@ export default function CountrySwitcher() {
 
   return (
     <div className="w-full">
-      <label className="text-sm font-medium text-slate-200 drop-shadow-sm">국가</label>
+      <label className="text-xs sm:text-sm font-medium text-slate-200 drop-shadow-sm">국가</label>
       <select
         value={country}
         onChange={(event) => {
@@ -25,7 +25,7 @@ export default function CountrySwitcher() {
             setCountry(value)
           }
         }}
-        className="glass-select h-[42px] mt-1 w-full rounded-lg px-3 text-sm text-slate-100"
+        className="glass-select h-[42px] mt-1 w-full rounded-lg px-3 text-xs sm:text-sm text-slate-100"
       >
         {COUNTRY_OPTIONS.map((option) => (
           <option key={option.value} value={option.value}>

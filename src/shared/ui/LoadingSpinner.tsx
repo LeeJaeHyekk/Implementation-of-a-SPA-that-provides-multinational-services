@@ -54,7 +54,7 @@ export default function LoadingSpinner({
       >
         <span className="sr-only">로딩 중...</span>
       </div>
-      {text && <p className={`${textColorClasses[color]} text-sm`}>{text}</p>}
+      {text && <p className={`${textColorClasses[color]} text-xs sm:text-sm`}>{text}</p>}
     </div>
   )
 

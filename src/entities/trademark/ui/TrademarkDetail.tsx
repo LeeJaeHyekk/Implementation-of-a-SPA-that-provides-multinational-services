@@ -2,6 +2,7 @@ import { NormalizedTrademark } from '../model/types'
 import { formatDateToDot, formatDateArray } from '@/shared/utils/date-utils'
 import { joinArrayOrDash } from '@/shared/utils/string-utils'
 import { STATUS_LABELS } from '../model/constants'
+import { GRID_CLASSES } from '@/shared/config/css-classes'
 
 interface TrademarkDetailProps {
   trademark: NormalizedTrademark
@@ -53,20 +54,20 @@ export default function TrademarkDetail({ trademark }: TrademarkDetailProps) {
       ]
 
   return (
-    <section className="glass-card space-y-6 rounded-2xl p-6">
-      <div className="space-y-2">
+    <section className="glass-card space-y-4 rounded-xl p-4 sm:space-y-6 sm:rounded-2xl sm:p-6">
+      <div className="space-y-1.5 sm:space-y-2">
         <p className="text-xs font-medium uppercase tracking-wider text-indigo-300 drop-shadow-sm">
           {trademark.country}
         </p>
-        <h1 className="text-2xl font-semibold text-slate-50 drop-shadow-md md:text-3xl">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-slate-50 drop-shadow-md break-words">
           {trademark.productName}
         </h1>
         {trademark.productNameEng ? (
-          <p className="text-sm text-slate-300 drop-shadow-sm">{trademark.productNameEng}</p>
+          <p className="text-xs sm:text-sm text-slate-300 drop-shadow-sm break-words">{trademark.productNameEng}</p>
         ) : null}
       </div>
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+      <div className={GRID_CLASSES.detailGrid}>
         {fields.map((field) => (
           <DetailItem key={field.label} label={field.label} value={field.value} />
         ))}
@@ -82,9 +83,9 @@ interface DetailItemProps {
 
 function DetailItem({ label, value }: DetailItemProps) {
   return (
-    <div className="glass-card flex flex-col gap-1 rounded-xl px-3 py-2">
+    <div className="glass-card flex flex-col gap-0.5 sm:gap-1 rounded-lg px-2.5 py-1.5 sm:rounded-xl sm:px-3 sm:py-2">
       <p className="text-xs text-slate-400 drop-shadow-sm">{label}</p>
-      <p className="text-sm font-medium text-slate-100 break-words drop-shadow-sm">{value}</p>
+      <p className="text-xs sm:text-sm font-medium text-slate-100 break-words drop-shadow-sm">{value}</p>
     </div>
   )
 }

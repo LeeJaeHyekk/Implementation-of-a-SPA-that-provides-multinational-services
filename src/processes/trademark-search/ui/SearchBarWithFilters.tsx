@@ -66,16 +66,42 @@ export default function SearchBarWithFilters() {
 
         // 검색어가 입력된 경우에만 검증 및 정제 수행
         if (hasKeyword) {
-          // 검증 수행
-          const validation = validateKeyword(trimmedInput, VALIDATION_CONFIG)
+          // 검증 수행 (에러 처리)
+          let validation
+          try {
+            validation = validateKeyword(trimmedInput, VALIDATION_CONFIG)
+          } catch (error) {
+            const searchError = handleSearchError(error, {
+              inputValue: trimmedInput,
+              step: 'validation',
+            })
+            logSearchError(searchError)
+            setErrorMessage('검색어 검증 중 오류가 발생했습니다.')
+            setIsProcessing(false)
+            return
+          }
+
           if (!validation.isValid) {
             setErrorMessage(validation.errorMessage ?? '유효하지 않은 검색어입니다.')
             setIsProcessing(false)
             return
           }
 
-          // 정제 수행
-          const sanitized = sanitizer.sanitize(trimmedInput)
+          // 정제 수행 (에러 처리)
+          let sanitized: string | null
+          try {
+            sanitized = sanitizer.sanitize(trimmedInput)
+          } catch (error) {
+            const searchError = handleSearchError(error, {
+              inputValue: trimmedInput,
+              step: 'sanitization',
+            })
+            logSearchError(searchError)
+            setErrorMessage('검색어 정제 중 오류가 발생했습니다.')
+            setIsProcessing(false)
+            return
+          }
+
           if (!sanitized) {
             setErrorMessage('검색어에 허용되지 않는 문자가 포함되어 있습니다.')
             setIsProcessing(false)
@@ -169,41 +195,41 @@ export default function SearchBarWithFilters() {
         }`}
       >
         {/* 검색 영역 */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-end">
+        <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-end">
           {/* 검색 입력란 */}
           <div className="flex-1">
-            <label className="text-sm font-medium text-slate-200 drop-shadow-sm md:text-base">
+            <label className="text-xs sm:text-sm font-medium text-slate-200 drop-shadow-sm md:text-base">
               상표명 검색
             </label>
             <div className="relative mt-1">
               <input
                 value={rawInput ?? ''}
                 onChange={handleChange}
-                className={`glass-input h-[42px] w-full rounded-lg px-3 pr-10 text-sm text-slate-100 md:px-4 md:text-base ${
+                className={`glass-input h-[42px] w-full rounded-lg px-3 pr-8 text-xs sm:pr-10 sm:text-sm text-slate-100 md:px-4 md:text-base ${
                   errorMessage ? 'glass-input-error' : ''
                 }`}
                 placeholder="상품명 또는 영문명을 입력 (최소 1자, 최대 100자)"
                 maxLength={VALIDATION_CONFIG.maxLength + 10}
               />
               {isProcessing && (
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 md:right-4">
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 sm:right-3 md:right-4">
                   <LoadingSpinner size="sm" color="indigo" />
                 </div>
               )}
             </div>
             {errorMessage && (
-              <p className="mt-1 text-xs font-medium text-red-300 drop-shadow-sm md:text-sm" role="alert">
+              <p className="mt-1 text-xs font-medium text-red-300 drop-shadow-sm sm:text-sm" role="alert">
                 {errorMessage}
               </p>
             )}
           </div>
 
           {/* 필터 아이콘 버튼 */}
-          <div className="md:w-auto">
+          <div className="w-full sm:w-auto">
             <button
               type="button"
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className={`glass-button h-[42px] w-full rounded-lg px-4 text-sm font-medium transition md:w-auto md:px-6 ${
+              className={`glass-button h-[42px] w-full rounded-lg px-3 text-xs sm:px-4 sm:text-sm font-medium transition sm:w-auto md:px-6 ${
                 isFilterOpen
                   ? 'glass-button-primary text-indigo-200'
                   : 'text-slate-200 hover:text-indigo-200'
@@ -211,10 +237,10 @@ export default function SearchBarWithFilters() {
               aria-label="필터 열기/닫기"
               aria-expanded={isFilterOpen}
             >
-              <span className="flex items-center justify-center gap-2">
+              <span className="flex items-center justify-center gap-1.5 sm:gap-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className={`h-5 w-5 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`}
+                  className={`h-4 w-4 sm:h-5 sm:w-5 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -232,14 +258,14 @@ export default function SearchBarWithFilters() {
           </div>
 
           {/* 검색 버튼 */}
-          <div className="md:w-auto">
+          <div className="w-full sm:w-auto">
             <button
               type="submit"
               disabled={isProcessing}
-              className="glass-button glass-button-primary h-[42px] w-full rounded-lg px-6 text-sm font-medium text-indigo-200 transition disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:transform-none md:w-auto md:px-8 md:text-base"
+              className="glass-button glass-button-primary h-[42px] w-full rounded-lg px-4 text-xs sm:px-6 sm:text-sm font-medium text-indigo-200 transition disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:transform-none sm:w-auto md:px-8 md:text-base"
             >
               {isProcessing ? (
-                <span className="flex items-center justify-center gap-2">
+                <span className="flex items-center justify-center gap-1.5 sm:gap-2">
                   <LoadingSpinner size="sm" color="indigo" />
                   <span className="hidden sm:inline">검색 중...</span>
                   <span className="sm:hidden">검색 중</span>

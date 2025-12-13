@@ -10,57 +10,57 @@ interface TrademarkCardProps {
 
 export default function TrademarkCard({ trademark, onSelect }: TrademarkCardProps) {
   return (
-    <article className="glass-card rounded-xl border border-slate-700/30 bg-slate-900/40 p-4 shadow-lg backdrop-blur-md transition-all hover:border-indigo-400/40 hover:shadow-xl">
-      <div className="flex items-start justify-between gap-3">
-        <div>
+    <article className="glass-card rounded-lg border border-slate-700/30 bg-slate-900/40 p-3 shadow-lg backdrop-blur-md transition-all hover:border-indigo-400/40 hover:shadow-xl sm:rounded-xl sm:p-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+        <div className="flex-1 min-w-0">
           <p className="text-xs font-medium uppercase tracking-wider text-slate-400 drop-shadow-sm">
             {trademark.country}
           </p>
-          <h3 className="mt-1 text-lg font-semibold text-slate-100 drop-shadow-sm">
+          <h3 className="mt-1 text-base sm:text-lg font-semibold text-slate-100 drop-shadow-sm break-words">
             {trademark.productName}
           </h3>
           {trademark.productNameEng ? (
-            <p className="mt-0.5 text-sm text-slate-300 drop-shadow-sm">{trademark.productNameEng}</p>
+            <p className="mt-0.5 text-xs sm:text-sm text-slate-300 drop-shadow-sm break-words">{trademark.productNameEng}</p>
           ) : null}
         </div>
-        <div className="flex items-center gap-2">
-          <span className="glass-badge rounded-lg bg-indigo-500/20 px-2 py-1 text-xs font-medium text-indigo-200 backdrop-blur-sm">
+        <div className="flex items-center gap-2 sm:flex-shrink-0">
+          <span className="glass-badge rounded-lg bg-indigo-500/20 px-1.5 py-0.5 text-xs font-medium text-indigo-200 backdrop-blur-sm sm:px-2 sm:py-1">
             {trademark.registerStatus}
           </span>
           <FavoriteButton trademarkId={trademark.id} />
         </div>
       </div>
 
-      <dl className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-300">
+      <dl className="mt-2 sm:mt-3 grid grid-cols-2 gap-1.5 sm:gap-2 text-xs text-slate-300">
         <div>
           <dt className="text-slate-400 drop-shadow-sm">출원번호</dt>
-          <dd className="mt-0.5 font-medium text-slate-100 drop-shadow-sm">{trademark.applicationNumber}</dd>
+          <dd className="mt-0.5 font-medium text-slate-100 drop-shadow-sm break-words">{trademark.applicationNumber}</dd>
         </div>
         <div>
           <dt className="text-slate-400 drop-shadow-sm">출원일</dt>
-          <dd className="mt-0.5 font-medium text-slate-100 drop-shadow-sm">
+          <dd className="mt-0.5 font-medium text-slate-100 drop-shadow-sm break-words">
             {trademark.applicationDate ?? '미상'}
           </dd>
         </div>
         <div>
           <dt className="text-slate-400 drop-shadow-sm">국제분류</dt>
-          <dd className="mt-0.5 font-medium text-slate-100 drop-shadow-sm">
+          <dd className="mt-0.5 font-medium text-slate-100 drop-shadow-sm break-words">
             {trademark.productMainCodes.join(', ') || '-'}
           </dd>
         </div>
         <div>
           <dt className="text-slate-400 drop-shadow-sm">비엔나 코드</dt>
-          <dd className="mt-0.5 font-medium text-slate-100 drop-shadow-sm">
+          <dd className="mt-0.5 font-medium text-slate-100 drop-shadow-sm break-words">
             {trademark.viennaCodeList.join(', ') || '-'}
           </dd>
         </div>
       </dl>
 
-      <div className="mt-3 flex justify-end">
+      <div className="mt-2 sm:mt-3 flex justify-end">
         <button
           type="button"
           onClick={() => onSelect?.(trademark.id)}
-          className="glass-button glass-button-primary rounded-lg px-4 py-1.5 text-sm font-medium text-indigo-200 transition"
+          className="glass-button glass-button-primary rounded-lg px-3 py-1 text-xs sm:px-4 sm:py-1.5 sm:text-sm font-medium text-indigo-200 transition"
         >
           상세보기
         </button>

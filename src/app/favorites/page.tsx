@@ -8,11 +8,17 @@ import { NormalizedTrademark } from '@/entities/trademark/model'
 import { isTrademarkArray } from '@/entities/trademark/lib/type-guards'
 import { useFavoritesStore } from '@/features/favorites/model/store'
 import { useTrademarksQuery } from '@/shared/api/useTrademarksQuery'
+import { navigateToTrademarkDetail } from '@/shared/utils/navigation'
+import NavigateButton from '@/shared/ui/NavigateButton'
+import ErrorState from '@/shared/ui/ErrorState'
+import EmptyState from '@/shared/ui/EmptyState'
+import LoadingSpinner from '@/shared/ui/LoadingSpinner'
+import { LAYOUT_CLASSES, GRID_CLASSES } from '@/shared/config/css-classes'
 
 export default function FavoritesRoute() {
   const favorites = useFavoritesStore((state) => state.favorites)
-  const { data: krData, isLoading: isLoadingKr } = useTrademarksQuery({ country: 'KR' })
-  const { data: usData, isLoading: isLoadingUs } = useTrademarksQuery({ country: 'US' })
+  const { data: krData, isLoading: isLoadingKr, isError: isErrorKr } = useTrademarksQuery({ country: 'KR' })
+  const { data: usData, isLoading: isLoadingUs, isError: isErrorUs } = useTrademarksQuery({ country: 'US' })
   const router = useRouter()
 
   const items = useMemo(() => {
@@ -30,26 +36,30 @@ export default function FavoritesRoute() {
   }, [favorites, krData, usData])
 
   const isLoading = isLoadingKr || isLoadingUs
+  const isError = isErrorKr || isErrorUs
 
   function handleSelect(id: string) {
-    router.push(`/trademark/${id}`)
+    navigateToTrademarkDetail(router, id)
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6">
-      <div className="mb-4">
-        <p className="text-sm font-medium text-indigo-300 drop-shadow-sm">즐겨찾기</p>
-        <h1 className="text-3xl font-bold text-slate-50 drop-shadow-md">저장된 상표 {favorites.length}건</h1>
+    <div className={LAYOUT_CLASSES.container}>
+      <div className={LAYOUT_CLASSES.pageHeader}>
+        <p className={LAYOUT_CLASSES.pageSubtitle}>즐겨찾기</p>
+        <h1 className={LAYOUT_CLASSES.pageTitle}>저장된 상표 {favorites.length}건</h1>
       </div>
 
-      {isLoading ? (
-        <p className="text-sm font-medium text-slate-300 drop-shadow-sm">불러오는 중...</p>
+      {isError ? (
+        <ErrorState
+          message="데이터를 불러오는 중 오류가 발생했습니다."
+          action={<NavigateButton to="search" className="mt-3" />}
+        />
+      ) : isLoading ? (
+        <LoadingSpinner size="lg" color="indigo" text="데이터를 불러오는 중..." fullScreen />
       ) : items.length === 0 ? (
-        <p className="glass-card rounded-lg px-4 py-3 text-sm font-medium text-slate-300">
-          즐겨찾기한 상표가 없습니다.
-        </p>
+        <EmptyState message="즐겨찾기한 상표가 없습니다." />
       ) : (
-        <div className="grid gap-4">
+        <div className={GRID_CLASSES.cardGrid}>
           {items.map((item) => (
             <TrademarkCard key={item.id} trademark={item} onSelect={handleSelect} />
           ))}

@@ -11,12 +11,12 @@ export async function loadLocalJson<T>({ loaders, errorMessage }: LoadLocalJsonA
       const value = loaded?.default
       const info = Array.isArray(value)
         ? { type: typeof value, isArray: true, length: value.length }
-        : { 
-            type: typeof value, 
-            isArray: false, 
-            keys: value !== null && typeof value === 'object' && !Array.isArray(value) 
-              ? Object.keys(value) 
-              : [] 
+        : {
+            type: typeof value,
+            isArray: false,
+            keys: value !== null && typeof value === 'object' && !Array.isArray(value)
+              ? Object.keys(value)
+              : [],
           }
       globalThis.console?.log?.('[LocalJson] loaded', info)
       if (value === undefined || value === null) {
