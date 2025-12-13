@@ -23,11 +23,6 @@ export function filterByKeyword(items: NormalizedTrademark[], keyword?: string):
 
   const result = safeFilter(items, (item) => matchKeyword(item, keyword), { keyword, function: 'filterByKeyword' })
 
-  globalThis.console?.log?.('[Filter] keyword', {
-    keyword,
-    before: items.length,
-    after: result.length,
-  })
   return result
 }
 
@@ -55,11 +50,6 @@ export function filterByApplicationNumber(
     { applicationNumber, function: 'filterByApplicationNumber' },
   )
 
-  globalThis.console?.log?.('[Filter] applicationNumber', {
-    applicationNumber,
-    before: items.length,
-    after: result.length,
-  })
   return result
 }
 
@@ -83,11 +73,6 @@ export function filterByStatus(
 
   const result = safeFilter(items, (item) => matchStatus(item, status), { status, function: 'filterByStatus' })
 
-  globalThis.console?.log?.('[Filter] status', {
-    status,
-    before: items.length,
-    after: result.length,
-  })
   return result
 }
 
@@ -127,12 +112,6 @@ export function filterByDateRange(
     { dateRange, function: 'filterByDateRange' },
   )
 
-  globalThis.console?.log?.('[Filter] dateRange', {
-    from,
-    to,
-    before: items.length,
-    after: result.length,
-  })
   return result
 }
 
@@ -189,14 +168,6 @@ export function filterTrademarks(
       // 에러 발생 시 이전 결과 유지
     }
   }
-
-  globalThis.console?.log?.('[Filter] pipeline', {
-    applicationNumber: filters.applicationNumber,
-    keyword: filters.keyword,
-    status: filters.status,
-    before: items.length,
-    after: result.length,
-  })
 
   return result
 }

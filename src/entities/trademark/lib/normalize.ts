@@ -16,11 +16,6 @@ type NormalizeArgs =
 export function normalizeTrademarks({ country, items }: NormalizeArgs): NormalizedTrademark[] {
   if (!items?.length) return []
 
-  globalThis.console?.log?.('[Normalize]', {
-    country,
-    inputCount: items.length,
-  })
-
   const result: NormalizedTrademark[] = []
 
   if (country === 'KR') {

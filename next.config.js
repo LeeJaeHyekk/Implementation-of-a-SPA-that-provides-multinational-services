@@ -5,6 +5,9 @@ import { fileURLToPath } from 'node:url'
 const nextConfig = {
   reactStrictMode: true,
   typedRoutes: true,
+  images: {
+    qualities: [75, 90],
+  },
   turbopack: {
     root: dirname(fileURLToPath(import.meta.url)),
   },

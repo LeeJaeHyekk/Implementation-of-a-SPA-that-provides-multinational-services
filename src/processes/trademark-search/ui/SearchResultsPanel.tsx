@@ -100,17 +100,6 @@ export default function SearchResultsPanel() {
     [filtered, selectedId],
   )
 
-  useEffect(() => {
-    globalThis.console?.log?.('[SearchDebug]', {
-      country,
-      filters,
-      effectiveFilters,
-      dataLength: trademarks.length,
-      isLoading,
-      isFetching,
-    })
-  }, [country, trademarks, effectiveFilters, filters, isFetching, isLoading])
-
   function handleSelect(id: string) {
     safeExecute(
       () => {

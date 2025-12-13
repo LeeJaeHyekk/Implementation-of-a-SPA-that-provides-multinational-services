@@ -61,14 +61,6 @@ export async function fetchTrademarksBase({
     return normalized
   }
 
-  if (country === 'KR') {
-    globalThis.console?.log?.('[KRFetchDebug]', {
-      rawCount: Array.isArray(data) ? data.length : 0,
-      normalizedCount: normalized.length,
-      preprocessedCount: preprocessed.length,
-    })
-  }
-
   return preprocessed
 }
 

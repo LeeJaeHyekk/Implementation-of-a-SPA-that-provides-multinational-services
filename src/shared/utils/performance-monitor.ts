@@ -52,20 +52,6 @@ class PerformanceMonitor {
     if (this.metrics.length > this.maxMetrics) {
       this.metrics.shift()
     }
-
-    // 개발 환경에서만 로깅
-    if (
-      typeof globalThis !== 'undefined' &&
-      globalThis.console &&
-      typeof globalThis.process !== 'undefined' &&
-      globalThis.process.env?.NODE_ENV === 'development'
-    ) {
-      globalThis.console.log(`[Performance] ${metric.operation}:`, {
-        duration: `${metric.duration.toFixed(2)}ms`,
-        items: metric.itemCount,
-        throughput: `${metric.itemsPerSecond.toFixed(0)} items/sec`,
-      })
-    }
   }
 
   /**

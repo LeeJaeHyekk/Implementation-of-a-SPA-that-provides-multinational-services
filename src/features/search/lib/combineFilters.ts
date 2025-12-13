@@ -32,13 +32,6 @@ export function combineFilters(items: NormalizedTrademark[], filters: TrademarkF
     return filterTrademarks(items, filters)
   }
 
-  // 대량 데이터는 경고 후 동기 처리 (비동기 버전 사용 권장)
-  if (typeof globalThis !== 'undefined' && globalThis.console) {
-    globalThis.console.warn(
-      '[combineFilters] 대량 데이터 감지. combineFiltersAsync 사용을 권장합니다.',
-      { itemCount: items.length },
-    )
-  }
-
+  // 대량 데이터는 동기 처리 (비동기 버전 사용 권장)
   return filterTrademarks(items, filters)
 }
