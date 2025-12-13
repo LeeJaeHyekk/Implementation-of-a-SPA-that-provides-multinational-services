@@ -151,8 +151,12 @@ export default function SearchBarWithFilters() {
         }
       }, 300)
 
-      return () => clearTimeout(timer)
+      return () => {
+        clearTimeout(timer)
+      }
     }
+    // 필터가 없을 때는 명시적으로 undefined 반환
+    return undefined
   }, [hasActiveFilters])
 
   const hasSearched = useSearchStore((state) => state.hasSearched)

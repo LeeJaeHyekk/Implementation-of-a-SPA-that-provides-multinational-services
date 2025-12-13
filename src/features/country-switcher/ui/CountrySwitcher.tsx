@@ -1,6 +1,7 @@
 'use client'
 
 import { TrademarkCountry } from '@/entities/trademark/model'
+import { isTrademarkCountry } from '@/entities/trademark/lib/type-guards/country-guards'
 
 import { useCountryStore } from '../model/store'
 
@@ -18,7 +19,12 @@ export default function CountrySwitcher() {
       <label className="text-sm font-medium text-slate-200 drop-shadow-sm">국가</label>
       <select
         value={country}
-        onChange={(event) => setCountry(event.target.value as TrademarkCountry)}
+        onChange={(event) => {
+          const value = event.target.value
+          if (isTrademarkCountry(value)) {
+            setCountry(value)
+          }
+        }}
         className="glass-select h-[42px] mt-1 w-full rounded-lg px-3 text-sm text-slate-100"
       >
         {COUNTRY_OPTIONS.map((option) => (

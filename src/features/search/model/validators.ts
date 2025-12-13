@@ -23,18 +23,19 @@ function toStatus(value?: string): RegisterStatus | 'all' | undefined {
   if (!value) return undefined
   const parsed = statusSchema.safeParse(value)
   if (!parsed.success) return undefined
-  return parsed.data as RegisterStatus | 'all'
+  // zod의 enum으로 검증했으므로 타입이 보장됨
+  return parsed.data
 }
 
 export function parseFiltersFromQuery(
   params: Record<string, string | string[] | undefined>,
 ): TrademarkFilters {
   const result = filterSchema.safeParse({
-    keyword: toStringValue(params.keyword),
-    applicationNumber: toStringValue(params.applicationNumber),
-    status: toStringValue(params.status),
-    from: toStringValue(params.from),
-    to: toStringValue(params.to),
+    keyword: toStringValue(params['keyword']),
+    applicationNumber: toStringValue(params['applicationNumber']),
+    status: toStringValue(params['status']),
+    from: toStringValue(params['from']),
+    to: toStringValue(params['to']),
   })
 
   if (!result.success) return {}

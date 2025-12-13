@@ -7,6 +7,8 @@ export { createArrayTypeGuard } from './array-guards'
 
 // 객체 타입 가드 유틸리티
 export { createObjectTypeGuard } from './object-guards'
+export * from './status-guards'
+export * from './country-guards'
 
 // 상표 관련 타입 가드
 export {

@@ -11,14 +11,13 @@ import type { KeywordMatcher, MatcherConfig } from './types'
  */
 class DefaultKeywordMatcher implements KeywordMatcher {
   private ignoreWhitespace: boolean
-  private ignoreCase: boolean
   private allowPartialMatch: boolean
   private normalizer = createMultiLanguageNormalizer()
 
   constructor(config: MatcherConfig = {}) {
     this.ignoreWhitespace = config.ignoreWhitespace ?? true
-    this.ignoreCase = config.ignoreCase ?? true
     this.allowPartialMatch = config.allowPartialMatch ?? true
+    // ignoreCase는 항상 true로 사용 (normalizer에서 처리)
   }
 
   matches(searchKeyword: string, targetKeyword: string): boolean {

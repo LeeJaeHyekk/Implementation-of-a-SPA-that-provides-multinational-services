@@ -288,12 +288,7 @@ export default function SearchResultsPanel() {
   )
 }
 
-function formatDate(value?: string | null): string {
-  if (!value) return '-'
-  const compact = value.replaceAll('-', '')
-  if (/^\d{8}$/.test(compact)) return compact
-  return value
-}
+import { formatDateToDot, formatDateArray } from '@/shared/utils/date-utils'
 
 interface DetailModalProps {
   trademark: NormalizedTrademark
@@ -340,10 +335,8 @@ function DetailModal({ trademark, onClose, onBack }: DetailModalProps) {
 
   const renderField = (label: string, value: string | string[] | null | undefined) => {
     const display = Array.isArray(value)
-      ? value.length > 0
-        ? value.map(formatDate).join(', ')
-        : '-'
-      : formatDate(value as string | null)
+      ? formatDateArray(value)
+      : formatDateToDot(value ?? null)
 
     return (
       <div

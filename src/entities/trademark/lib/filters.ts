@@ -176,6 +176,7 @@ export function filterTrademarks(
   let result = items
   for (let i = 0; i < pipeline.length; i++) {
     const step = pipeline[i]
+    if (!step) continue
     try {
       result = step(result)
     } catch (error) {

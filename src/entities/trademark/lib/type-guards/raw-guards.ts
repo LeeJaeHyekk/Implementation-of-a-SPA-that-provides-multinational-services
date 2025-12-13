@@ -12,8 +12,8 @@ import type { KRTrademarkRaw, USTrademarkRaw } from '../../model/countryTypes'
 export const isKRTrademarkRaw = createObjectTypeGuard<KRTrademarkRaw>(
   (obj: Record<string, unknown>) => {
     return (
-      typeof obj.applicationNumber === 'string' &&
-      (obj.productName === null || typeof obj.productName === 'string')
+      typeof obj['applicationNumber'] === 'string' &&
+      (obj['productName'] === null || typeof obj['productName'] === 'string')
     )
   },
 )
@@ -24,8 +24,8 @@ export const isKRTrademarkRaw = createObjectTypeGuard<KRTrademarkRaw>(
 export const isUSTrademarkRaw = createObjectTypeGuard<USTrademarkRaw>(
   (obj: Record<string, unknown>) => {
     return (
-      typeof obj.applicationNumber === 'string' &&
-      (obj.productName === null || typeof obj.productName === 'string')
+      typeof obj['applicationNumber'] === 'string' &&
+      (obj['productName'] === null || typeof obj['productName'] === 'string')
     )
   },
 )

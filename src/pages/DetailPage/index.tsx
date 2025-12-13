@@ -5,7 +5,7 @@ import { useRouter } from 'next/router'
 
 export default function DetailPage() {
   const router = useRouter()
-  const id = router.query.id
+  const id = router.query['id']
 
   useEffect(() => {
     if (typeof id === 'string') {

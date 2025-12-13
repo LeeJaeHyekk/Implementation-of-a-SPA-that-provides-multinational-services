@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, type ChangeEvent } from 'react'
 
-import { RegisterStatus } from '@/entities/trademark/model/types'
 import { getStatusOptionsForCountry } from '@/entities/trademark/lib'
+import { isRegisterStatusOrAll } from '@/entities/trademark/lib/type-guards/status-guards'
 import { useCountryStore } from '@/features/country-switcher/model/store'
 
 import { useSearchStore } from '../model/store'
@@ -31,7 +31,13 @@ export default function StatusFilter() {
   const hasValue = status !== 'all'
 
   function handleChange(event: ChangeEvent<HTMLSelectElement>) {
-    setStatus(event.target.value as RegisterStatus | 'all')
+    const value = event.target.value
+    if (isRegisterStatusOrAll(value)) {
+      setStatus(value)
+    } else {
+      // 유효하지 않은 값인 경우 'all'로 설정
+      setStatus('all')
+    }
   }
 
   function handleClear() {

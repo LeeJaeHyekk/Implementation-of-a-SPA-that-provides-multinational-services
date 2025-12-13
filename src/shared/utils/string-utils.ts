@@ -7,14 +7,16 @@
  * 안전한 trim 처리
  */
 export function safeTrim(value?: string | null): string {
-  if (!value || typeof value !== 'string') {
+  if (value === null || value === undefined) {
+    return ''
+  }
+  if (typeof value !== 'string') {
     return ''
   }
   try {
     return value.trim()
   } catch {
-    // value는 이미 string 타입이므로 안전하게 변환
-    return typeof value === 'string' ? value : ''
+    return value
   }
 }
 
